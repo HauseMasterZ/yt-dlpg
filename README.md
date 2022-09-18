@@ -1,4 +1,4 @@
-# ytdlpg
+# yt-dlpg
 
 
 
