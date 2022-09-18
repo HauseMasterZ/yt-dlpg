@@ -5,7 +5,7 @@ A Fork of YouTube dlp Which in itself is a fork of YouTube dl
 Provides a userfriendly way and a gui to use youtube dlp
 
 # INSTALLATION
-Build the main.py file and Windows users can download the latest yt-dlp.exe file from [here](https://github.com/yt-dlp/yt-dlp/releases/tag/2022.09.01) 
+Download the app from [here](https://github.com/HauseMasterZ/yt-dlpg/releases/tag/v0.1) and download the latest yt-dlp.exe file from [here](https://github.com/yt-dlp/yt-dlp/releases/tag/2022.09.01) 
 Then simply open the main.exe and select the yt-dlp.exe directory or copy paste the path in along with any comma separated urls and click download after selecting your download location
 
 # OPTIONS
