@@ -3,7 +3,7 @@
 
 
 <p align="center">
-    <img src="https://user-images.githubusercontent.com/113833707/190904921-676819fd-5484-4e23-8643-5f14def58527.png" alt="App Home Page">
+    <img src="https://user-images.githubusercontent.com/113833707/219849489-60d8c3ea-432e-4cf2-97bc-cb6ce6f2f2d8.png" alt="App Home Page">
 </p>
 YouTube Dlp Gui download videos from youtube.com or other video platforms
 A Fork of YouTube dlp Which in itself is a fork of YouTube dl
@@ -16,8 +16,8 @@ Then simply open the main.exe and select the yt-dlp.exe directory or copy paste 
 
 # OPTIONS
 Archive File - Creates a .txt file in the parent directory of yt-dlp.exe where it stores any downloaded file so that you don't need to download it again, Doesn't account for different file extensions and treats all of them as the same video
-
-Still in Active Development
+ Auto Start - Creates a shortcut link file in the default startup directory which points to the batch script file. This allows the script to auto run on os startup. If you want to delete the file uncheck the box and hit download again.
+ 
 
 
 
