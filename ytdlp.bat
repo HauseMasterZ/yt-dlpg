@@ -1,0 +1,1 @@
+start /D "C:\Users\Hause\Documents\Code\YouTube_dlp_GUI" cmd /k "yt-dlp.exe -P "C:/Users/Hause/Documents" -S "res:" -f aac https://www.youtube.com/watch?v=DTpzmP_Rgak&list=PLK5tc6FSo177DVG_k_Tx57Ztvh0B-5Drd&index=1"
