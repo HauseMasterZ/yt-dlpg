@@ -6,8 +6,6 @@ import os
 import subprocess
 from tkinter import filedialog
 import win32com.client
-import pythoncom
-import win32api, win32con
 from idlelib.tooltip import Hovertip
 Shell = win32com.client.Dispatch("WScript.Shell")       
 startup_folder = Shell.SpecialFolders("Startup")
