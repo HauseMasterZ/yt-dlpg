@@ -169,7 +169,6 @@ arc = IntVar()
 chkBox = Checkbutton(root, text="Use Archive File", variable=arc)
 chkBox.place(x=330, y=110)
 #Tooltip for Archile file Checkbox
-#Tooltip
 tool_tip = Label(root, text="?")
 tool_tip.place(x=445, y=111)
 myTip = Hovertip(tool_tip,"Creates a text file which stores all the downloaded files\nSo that it won't download the same file again.")
