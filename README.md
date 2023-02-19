@@ -2,8 +2,12 @@
 
 
 
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/113833707/219854456-fc41730e-8651-4919-a40e-5f5cd44603aa.png" alt="Sublime's custom image"/>
+</p>
+
 # INSTALLATION
-Very simple portable installation, Just download exe file and run it.
+Portable File, Just download exe file and run it.
 
 # OPTIONS
 ## Auto Start
