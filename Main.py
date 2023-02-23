@@ -7,14 +7,25 @@ import subprocess
 from tkinter import filedialog
 import win32com.client
 from idlelib.tooltip import Hovertip
+import sys
 Shell = win32com.client.Dispatch("WScript.Shell")       
 startup_folder = Shell.SpecialFolders("Startup")
 
 urls = []
 
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+def tempOpen():
+    os.popen(resource_path('yt-dlp.exe'))
+    print('ytdlp opened')
+
+
 # Main Download Button Action
 def downAction():
     global urls
+    tempOpen()
     urls = text_box.get("1.0", END).split(",")
     arcBool = arc.get()
     for i in range(len(urls)):
@@ -96,6 +107,7 @@ def openYtdl():
     ytdlpath = filedialog.askopenfilename()
     ytdldirectory.delete("1.0", END)
     ytdldirectory.insert("1.0", ytdlpath)
+
 
 
 def videoRes(event):
