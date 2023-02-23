@@ -1,0 +1,1 @@
+start /D "C:\Users\Hause\Documents\Code\YouTube_dlp_GUI\dist" cmd /k "yt-dlp.exe -P "C:/Users/Hause/Pictures" -f m4a https://www.youtube.com/watch?v=nwxTw38k_vs"

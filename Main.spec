@@ -5,9 +5,9 @@ block_cipher = None
 
 
 a = Analysis(
-    ['main.py'],
+    ['Main.py'],
     pathex=[],
-    binaries=[],
+    binaries=[('C:\\Users\\Hause\\Documents\\Code\\YouTube_dlp_GUI\\yt-dlp.exe', '.')],
     datas=[],
     hiddenimports=[],
     hookspath=[],
@@ -28,7 +28,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='main',
+    name='Main',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
