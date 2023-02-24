@@ -16,4 +16,4 @@ To Delete the file, uncheck the box and hit download.
 
 ## Archieve File
 Uses a archieve file to keep track of downloaded files so not to download them again.
-Creates a text file in the parent directory.
+Creates a text file in the parent directory which contains all downloaded media.
