@@ -60,6 +60,7 @@ def downloader(urls, ext, direc, ytdldirec, arcBool, res):
     here = "".join(list(reversed(ytdldirec)))
     ytdlp = os.path.join(here, 'ytdlp.bat')
     here = here.replace("/", "\\")
+    print(here)
     try:
         myBat = open(ytdlp, 'w+')
         myBat.truncate(0)
