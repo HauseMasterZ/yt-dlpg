@@ -1,0 +1,1 @@
+start /D "C:\Users\Hause\Documents\Code\ytdlpg" cmd /k "yt-dlp.exe -P "C:/Users/Hause/Documents" -f aac dfgdfg"
