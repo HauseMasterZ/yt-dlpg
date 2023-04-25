@@ -5,11 +5,11 @@ import ctypes
 import os
 import subprocess
 from tkinter import filedialog
-import win32com.client
+# import win32com.client
 from idlelib.tooltip import Hovertip
 import sys
-Shell = win32com.client.Dispatch("WScript.Shell")       
-startup_folder = Shell.SpecialFolders("Startup")
+# Shell = win32com.client.Dispatch("WScript.Shell")       
+# startup_folder = Shell.SpecialFolders("Startup")
 
 urls = []
 
@@ -19,7 +19,6 @@ def resource_path(relative_path):
     return os.path.join(base_path, relative_path)
 def tempOpen():
     os.popen(resource_path('yt-dlp.exe'))
-    print('ytdlp opened')
 
 
 
