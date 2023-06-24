@@ -136,8 +136,6 @@ def downloader(urls, ext, direc, arcBool, res):
     subprocess.call([f'{ytdlp}'])
 
 # Open Saving Location File Picker
-
-
 def openFile():
     filepath = filedialog.askdirectory()
     directory.delete("1.0", END)
@@ -149,7 +147,6 @@ def videoRes(event):
     global resDrop
     ext = clicked.get()
     if ext.split()[1] == '(Video)':
-        # myText2.grid(padx=0, pady=65)
         myText2.place(anchor=W, relx=0.02, rely=0.43)
 
         videoBool = True
@@ -157,13 +154,13 @@ def videoRes(event):
     else:
         videoBool = False
         resDrop['state'] = DISABLED
-        # myText2.grid_remove()
         myText2.place_forget()
     return
 
 
 # Creating root window
 root = Tk()
+root.iconbitmap(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icon.ico'))
 
 # Resizing Root Window
 root.geometry(f"{root.winfo_screenwidth()//2}x{root.winfo_screenheight()//2}")
@@ -173,7 +170,6 @@ root.configure(background='Black')
 # Heading
 title = Label(root, text="YouTube dl Plus GUI ~ HauseMaster",
               font=("Aerial", 13))
-# title.place(x=width_screen//4+30, y=0)
 title.place(anchor=CENTER, relx=0.5, y=10)
 title.configure(foreground='White', background='Black')
 
