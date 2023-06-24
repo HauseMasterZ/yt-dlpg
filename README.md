@@ -3,8 +3,10 @@
 
 
 <p align="center">
-  <img src="https://user-images.githubusercontent.com/113833707/219854456-fc41730e-8651-4919-a40e-5f5cd44603aa.png" alt="Sublime's custom image"/>
+  <img src="https://github.com/HauseMasterZ/yt-dlpg/assets/113833707/6a0b9b02-5926-4730-a61f-d7429b3d79a7" alt="Home Page"/>
 </p>
+
+
 
 # INSTALLATION
 Portable File, Just download exe file and run it.
