@@ -8,39 +8,13 @@ from tkinter import filedialog
 
 urls = []
 
-
-class CreateToolTip(object):
-    """
-    create a tooltip for a given widget
-    """
-
-    def __init__(self, widget, text='widget info'):
-        self.waittime = 500  # miliseconds
-        self.wraplength = 180  # pixels
-        self.widget = widget
-        self.text = text
-        self.widget.bind("<Enter>", self.enter)
-        self.widget.bind("<Leave>", self.leave)
-        self.widget.bind("<ButtonPress>", self.leave)
-        self.id = None
-        self.tw = None
-
-    def enter(self, event=None):
-        self.schedule()
-
-    def leave(self, event=None):
-        self.unschedule()
-        self.hidetip()
-
-    def schedule(self):
-        self.unschedule()
-        self.id = self.widget.after(self.waittime, self.showtip)
-
-    def unschedule(self):
-        id = self.id
-        self.id = None
-        if id:
-            self.widget.after_cancel(id)
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)
+def tempOpen():
+    os.popen(resource_path('yt-dlp.exe'))
+    print('ytdlp opened')
 
     def showtip(self, event=None):
         x = y = 0
@@ -164,6 +138,7 @@ def videoRes(event):
 
 # Creating root window
 root = Tk()
+root.iconbitmap(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'icon.ico'))
 
 # Resizing Root Window
 root.geometry(f"{root.winfo_screenwidth()//2}x{root.winfo_screenheight()//2}")
@@ -193,8 +168,7 @@ text_box.configure(foreground='Black')
 # Main Download Button
 myDown = Button(root, text="Download", command=downAction, padx=6, pady=10)
 myDown.place(anchor=E, relx=0.96, rely=0.17)
-myDown.configure(foreground='White', background='Black',
-                 activebackground='Black', activeforeground='White', relief=GROOVE, bd=1)
+myDown.configure(foreground='White', background='Black', activebackground='Black', activeforeground='White', relief=GROOVE, bd=1)
 
 
 # Extension Drop Down Menu
@@ -220,6 +194,8 @@ resDrop.current(4)
 resDrop['state'] = DISABLED
 videoBool = False
 drop.bind('<<ComboboxSelected>>', videoRes)
+
+
 
 
 # Archive File Checkbox
@@ -254,14 +230,12 @@ myTip1 = CreateToolTip(auto_label,
 # Directory of Files Button
 filePickerButton = Button(root, text="Saving Directory: ", command=openFile)
 filePickerButton.place(anchor=W, relx=0.03, rely=0.8)
-filePickerButton.configure(foreground='White', background='Black',
-                           activebackground='Black', activeforeground='White', relief=GROOVE, borderwidth=1)
+filePickerButton.configure(foreground='White', background='Black', activebackground='Black', activeforeground='White', relief=GROOVE, borderwidth=1)
 
 # Saving Path
 directory = Text(root, fg="black", highlightthickness="1", height=1)
 directory.place(anchor=W, relx=0.2, rely=0.8, relwidth=0.7)
-directory.configure(background='#0D0901', foreground='White', highlightbackground='White',
-                    highlightthickness=1, borderwidth=0, highlightcolor='Grey')
+directory.configure(background='#0D0901', foreground='White', highlightbackground='White', highlightthickness=1, borderwidth=0, highlightcolor='Grey')
 
 
 # Loop Main
