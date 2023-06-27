@@ -363,6 +363,7 @@ videoBool = False
 drop.bind('<<ComboboxSelected>>', videoRes)
 
 
+
 # Archive File Checkbox
 arc = IntVar()
 chkBox = Checkbutton(root, variable=arc)
@@ -401,6 +402,14 @@ progress_bar.place(relwidth=0.75, anchor=CENTER, relx=0.5, rely=0.75)
 percentage_lbl = Label(root, text='0%')
 percentage_lbl.place(anchor=W, relx=0.9, rely=0.75)
 percentage_lbl.configure(background='Black', foreground='#0096FF')
+
+
+note_lbl = Label(root, text=' ? ')
+note_lbl.place(anchor=W, relx=0.94, rely=0.75)
+note_lbl.configure(background='Black', foreground='White')
+myTip3 = CreateToolTip(note_lbl,
+                       'Note: If the format of download is different than the one you selected then '
+                       'the format is not available and its choosing the next best available format.')
 
 # Size of file
 size_lbl = Label(root)
