@@ -64,11 +64,11 @@ class CreateToolTip(object):
         if tw:
             tw.destroy()
 
+is_running = False
 
 # Main Download Button Action
 def downAction():
-    global ydl_thread_global
-    global urls
+    global ydl_thread_global, urls, is_running
     urls = text_box.get("1.0", END).split(",")
     arcBool = arc.get()
     for i in range(len(urls)):
@@ -85,24 +85,31 @@ def downAction():
         tkm.showinfo("Invalid Directory", "Enter Valid Directory")
         return
     myDown.configure(text='Downloading...', background='Red')
-    size_lbl.place(anchor=W, relx=0.29, rely=0.85)
+    size_lbl.place(anchor=E, relx=0.4, rely=0.85)
     speed_lbl.place(anchor=E, relx=0.54, rely=0.85)
     eta_lbl.place(anchor=W, relx=0.56, rely=0.85)
     now_lbl.place(anchor=CENTER, relx=0.5, rely=0.65)
     index_lbl_id.place(anchor=CENTER, relx=0.88, rely=0.25)
     of_lbl.place(anchor=CENTER, relx=0.9, rely=0.25)
     index_lbl_total.place(anchor=W, relx=0.91, rely=0.25)
+    if not is_running:
+        ydl_thread = threading.Thread(target=downloader, args=(
+            urls, ext, direc, arcBool, res[:-1]))
+        is_running = True
+        ydl_thread.start()
+    else:
+        messagebox.showinfo('Current download is not finished',
+                    'Please Wait till the current dowload is finished.')
 
-    ydl_thread = threading.Thread(target=downloader, args=(
-        urls, ext, direc, arcBool, res[:-1]))
-    ydl_thread.start()
 
 
 on_close = False
 playlist_index = 1
+class DownloadStoppedError(Exception):
+    pass
+
+
 # Live Updation
-
-
 def progressHook(progress):
     global on_close, playlist_index
     if on_close:
@@ -113,13 +120,32 @@ def progressHook(progress):
         myDown.configure(text='Downloading...', background='Red')
         total_bytes = progress.get('total_bytes')
         downloaded_bytes = progress.get('downloaded_bytes')
-        size_lbl.configure(
-            text=f"{format(downloaded_bytes/1048576, '.2f')}MB of {format(total_bytes/1048576, '.2f')}MB at ")
-        speed_lbl.configure(
-            text=f"{format(progress.get('speed')/1048576, '.2f')}Mib/s")
-        eta_lbl.configure(
-            text=f"{int(progress['eta']/60)} minutes remaining...")
-        now_lbl.configure(text=f'Now downloading: {file_name}')
+        try:
+            total_size = float(format(total_bytes/1048576, '.2f'))
+            if total_size > 1024:
+                total_size = format(total_size/1024, '.2f')
+                total_size = str(total_size) + 'GiB'
+            else:
+                total_size = str(total_size) + 'MiB'
+            curr_size = float(format(downloaded_bytes/1048576, '.2f'))
+            if curr_size > 1024:
+                curr_size = format(curr_size/1024, '.2f')
+                curr_size=str(curr_size) + 'GiB'
+            else:
+                curr_size = str(curr_size) + 'MiB'
+            size_lbl.configure(
+                text=f"{curr_size} of {total_size}")
+            speed_lbl.configure(
+                text=f"at {format(progress.get('speed')/1048576, '.2f')}MiB/s")
+            if int(progress['eta']) > 60:
+                eta_lbl.configure(
+                    text=f"{int(progress['eta']/60)} minutes remaining...")
+            else:
+                eta_lbl.configure(
+                    text=f"{int(progress['eta'])} seconds remaining...")
+            now_lbl.configure(text=f'Now downloading: {file_name}')
+        except:
+            pass
         if total_bytes and downloaded_bytes:
             percentage = (downloaded_bytes / total_bytes) * 100
             progress_bar['value'] = percentage
@@ -134,14 +160,11 @@ def progressHook(progress):
         myDown.configure(text='Downloading...', background='Red')
 
 
-class DownloadStoppedError(Exception):
-    pass
-
 # Writing And Calling the Bat File
 
 
 def downloader(urls, ext, direc, arcBool, res):
-    global videoBool, auto_start_bool, playlist_index
+    global videoBool, auto_start_bool, playlist_index, is_running
     ext = ext.split(' ', 1)[0]
     ydl_opts = {
         'format': f'bestaudio[ext={ext}]/bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio[ext=flv]',
@@ -167,6 +190,7 @@ def downloader(urls, ext, direc, arcBool, res):
                 ydl.download([video_url])
                 if ydl.params.get('noplaylist') or ydl.params.get('max_downloads') is None:
                     myDown.configure(text='Download', background='Black')
+                    is_running = False
                     playlist_index = 1
     except DownloadStoppedError:
         return
