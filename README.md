@@ -6,10 +6,17 @@
   <img src="https://github.com/HauseMasterZ/yt-dlpg/assets/113833707/b77d1e6d-6092-43df-85fe-130ccbd5eccf" alt="Home Page"/>
 </p>
 
-
+Note: If the downloaded file format is different to the one you selected then the file format you provided is not avaiable so the program is automatically choosing the next best avaiable format.
 
 # INSTALLATION
-Portable File, Just download exe file and run it.
+Portable File or Install exe.
+
+
+For cloning, Dependencies in requirements.txt
+
+
+``` pip install -r requirements.txt ```
+
 
 # OPTIONS
 ## Auto Start
