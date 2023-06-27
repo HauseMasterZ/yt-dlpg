@@ -93,12 +93,16 @@ def downAction():
     of_lbl.place(anchor=CENTER, relx=0.9, rely=0.25)
     index_lbl_total.place(anchor=W, relx=0.91, rely=0.25)
 
-    ydl_thread = threading.Thread(target=downloader, args=(urls,ext,direc,arcBool, res[:-1]))
+    ydl_thread = threading.Thread(target=downloader, args=(
+        urls, ext, direc, arcBool, res[:-1]))
     ydl_thread.start()
+
 
 on_close = False
 playlist_index = 1
 # Live Updation
+
+
 def progressHook(progress):
     global on_close, playlist_index
     if on_close:
@@ -109,9 +113,12 @@ def progressHook(progress):
         myDown.configure(text='Downloading...', background='Red')
         total_bytes = progress.get('total_bytes')
         downloaded_bytes = progress.get('downloaded_bytes')
-        size_lbl.configure(text=f"{format(downloaded_bytes/1048576, '.2f')}MB of {format(total_bytes/1048576, '.2f')}MB at ")
-        speed_lbl.configure(text=f"{format(progress.get('speed')/1048576, '.2f')}Mib/s")
-        eta_lbl.configure(text=f"{int(progress['eta']/60)} minutes remaining...")
+        size_lbl.configure(
+            text=f"{format(downloaded_bytes/1048576, '.2f')}MB of {format(total_bytes/1048576, '.2f')}MB at ")
+        speed_lbl.configure(
+            text=f"{format(progress.get('speed')/1048576, '.2f')}Mib/s")
+        eta_lbl.configure(
+            text=f"{int(progress['eta']/60)} minutes remaining...")
         now_lbl.configure(text=f'Now downloading: {file_name}')
         if total_bytes and downloaded_bytes:
             percentage = (downloaded_bytes / total_bytes) * 100
@@ -120,18 +127,19 @@ def progressHook(progress):
             root.update_idletasks()
     elif progress['status'] == 'finished':
         playlist_index += 1
-        playlist_index=min(playlist_index, int(index_lbl_total.cget('text')))
+        playlist_index = min(playlist_index, int(index_lbl_total.cget('text')))
         index_lbl_id.configure(text=playlist_index)
         now_lbl.configure(text=f'Done downloading: {file_name}')
     else:
         myDown.configure(text='Downloading...', background='Red')
-        
 
 
 class DownloadStoppedError(Exception):
     pass
 
 # Writing And Calling the Bat File
+
+
 def downloader(urls, ext, direc, arcBool, res):
     global videoBool, auto_start_bool, playlist_index
     ext = ext.split(' ', 1)[0]
@@ -144,14 +152,18 @@ def downloader(urls, ext, direc, arcBool, res):
         ydl_opts['format'] = f"bv*[ext={ext}][height<={res}]+ba[ext={ext}][height<={res}]/b[ext={ext}][height<={res}]/bv*[ext={ext}][height<=1080]+ba[ext={ext}][height<=1080]/b[ext={ext}][height<=1080]/bv*+ba/b"
 
     if arcBool:
-        ydl_opts['download_archive'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'archive.txt')
+        ydl_opts['download_archive'] = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 'archive.txt')
     try:
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             for video_url in urls:
                 info_dict = ydl.extract_info(video_url, download=False)
                 index_lbl_id.configure(text='1')
                 of_lbl.configure(text='of ')
-                index_lbl_total.configure(text=info_dict['playlist_count'])
+                try:
+                    index_lbl_total.configure(text=info_dict['playlist_count'])
+                except KeyError:
+                    index_lbl_total.configure(text='1')
                 ydl.download([video_url])
                 if ydl.params.get('noplaylist') or ydl.params.get('max_downloads') is None:
                     myDown.configure(text='Download', background='Black')
@@ -160,11 +172,9 @@ def downloader(urls, ext, direc, arcBool, res):
         return
     except youtube_dl.DownloadError as err:
         messagebox.showinfo('Youtube Dlp Error Occured',
-                    f'{err}')
+                            f'{err}')
         myDown.configure(text='Download', background='Black')
         playlist_index = 1
-
-
 
 
 def autoStart():
@@ -223,16 +233,20 @@ def autoStart():
         os.remove(os.path.join(here, 'auto_start.lnk'))
     except:
         pass
-    
+
     root.destroy()
 
 # Open Saving Location File Picker
+
+
 def openFile():
     filepath = filedialog.askdirectory()
     directory.delete("1.0", END)
     directory.insert("1.0", filepath)
 
 # Resolution Drop Down
+
+
 def videoRes(event):
     global videoBool
     global resDrop
