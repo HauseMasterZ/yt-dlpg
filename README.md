@@ -3,7 +3,7 @@
 
 
 <p align="center">
-  <img src="https://github.com/HauseMasterZ/yt-dlpg/assets/113833707/6a0b9b02-5926-4730-a61f-d7429b3d79a7" alt="Home Page"/>
+  <img src="https://github.com/HauseMasterZ/yt-dlpg/assets/113833707/b77d1e6d-6092-43df-85fe-130ccbd5eccf" alt="Home Page"/>
 </p>
 
 
