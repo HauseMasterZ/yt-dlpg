@@ -5,10 +5,10 @@ block_cipher = None
 
 
 a = Analysis(
-    ['main.py'],
+    ['Main.py'],
     pathex=[],
     binaries=[],
-    datas=[('yt-dlp.exe', '.'), ('icon.ico', '.')],
+    datas=[('icon.ico', '.'), ('archive.txt', '.'), ('ytdlp.bat', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -26,7 +26,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='main',
+    name='Main',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -47,5 +47,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='main',
+    name='Main',
 )
