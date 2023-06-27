@@ -181,6 +181,7 @@ def autoStart():
     global on_close
     on_close = True
     if auto_start_bool.get() == 1:
+        startup_folder = Shell.SpecialFolders("Startup")
         arcBool = arc.get()
         direc = directory.get("1.0", END)
         direc = direc.strip("\n")
@@ -216,14 +217,12 @@ def autoStart():
         import win32com.client
         Shell = win32com.client.Dispatch("WScript.Shell")
         startup_folder = Shell.SpecialFolders("Startup")
-        shortcut_file = open("auto_start.lnk", "w+")
+        shortcut_path = os.path.join(startup_folder, 'auto_start.lnk')
         target_file = ytdlp
-        shortcut = Shell.CreateShortCut(
-            os.path.join(startup_folder, 'auto_start.lnk'))
+        shortcut = Shell.CreateShortCut(shortcut_path)
         shortcut.Targetpath = target_file
         shortcut.WindowStyle = 7
         shortcut.save()
-        shortcut_file.close()
     else:
         try:
             os.remove(os.path.join(startup_folder, 'auto_start.lnk'))
@@ -359,8 +358,8 @@ auto_label.place(anchor=W, relx=0.52, rely=0.43)
 auto_label.configure(background='Black', foreground='White')
 
 myTip1 = CreateToolTip(auto_label,
-                       'Creates a shortcut file pointing to the batch script in the default startup folder.'
-                       'To delete the file just uncheck box and hit download.')
+                       'Creates a shortcut file pointing to the batch script in the default startup folder (WINDOWS ONLY).'
+                       'To delete the file just uncheck box')
 
 # Progress Bar
 progress_bar = ttk.Progressbar(
