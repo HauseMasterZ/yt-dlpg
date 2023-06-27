@@ -268,8 +268,6 @@ def openFile():
     directory.insert("1.0", filepath)
 
 # Resolution Drop Down
-
-
 def videoRes(event):
     global videoBool
     global resDrop
@@ -288,8 +286,17 @@ def videoRes(event):
 
 # Creating root window
 root = Tk()
-root.iconbitmap(os.path.join(os.path.dirname(
-    os.path.abspath(__file__)), 'icon.ico'))
+is_windows = os.name == 'nt'
+try:
+    if is_windows:
+        root.iconbitmap(os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), 'icon.ico'))
+    else:
+        root.iconbitmap('@'+os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), 'icon.xbm'))
+except:
+    messagebox.showinfo('Iconbitmap icon not found',
+                    'Window Icon Cannot be loaded')
 
 # Resizing Root Window
 root.geometry(f"{root.winfo_screenwidth()//2}x{root.winfo_screenheight()//2}")
