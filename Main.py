@@ -274,7 +274,6 @@ def videoRes(event):
     ext = clicked.get()
     if ext.split()[1] == '(Video)':
         myText2.place(anchor=W, relx=0.02, rely=0.43)
-
         videoBool = True
         resDrop['state'] = NORMAL
     else:
