@@ -532,3 +532,5 @@ def set_focus(event):
 root.protocol("WM_DELETE_WINDOW", autoStart)
 root.bind("<Button-1>", set_focus)
 root.mainloop()
+
+
