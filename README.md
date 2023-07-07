@@ -1,10 +1,10 @@
 # yt-dlpg
 
-
-
 <p align="center">
   <img src="https://github.com/HauseMasterZ/yt-dlpg/assets/113833707/64c20117-13a0-46ae-b4c0-47128aabffea" alt="Home Page"/>
 </p>
+A simple youtube video downloader.
+
 
 Note: If the downloaded file format is different to the one you selected then the file format you provided is not avaiable so the program is automatically choosing the next best avaiable format.
 
