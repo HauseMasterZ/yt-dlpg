@@ -1,3 +1,4 @@
+import datetime
 from tkinter import *
 from tkinter import ttk
 import tkinter.messagebox as tkm
@@ -6,7 +7,7 @@ import yt_dlp as youtube_dl
 from tkinter import filedialog
 import threading
 from tkinter import messagebox
-
+import ffmpeg
 urls = []
 
 
@@ -92,9 +93,26 @@ def downAction():
     index_lbl_id.place(anchor=CENTER, relx=0.88, rely=0.25)
     of_lbl.place(anchor=CENTER, relx=0.9, rely=0.25)
     index_lbl_total.place(anchor=W, relx=0.91, rely=0.25)
+    start_time = starting_timestamp.get()
+    end_time = ending_timestamp.get()
+    valid_time_format = "%H:%M:%S"
+    try:
+        # Validate start time
+        start_time_obj = datetime.datetime.strptime(start_time, valid_time_format).time()
+        # Validate end time
+        end_time_obj = datetime.datetime.strptime(end_time, valid_time_format).time()
+    except ValueError:
+        messagebox.showinfo('Invalid time format','Please enter time in HH:MM:SS format')
+        myDown.configure(text='Download', background='Black')
+        return
+    # Check if start time is before end time
+    if start_time_obj > end_time_obj:
+        messagebox.showinfo('Invalid time format','Start time should be before end time')
+        myDown.configure(text='Download', background='Black')
+        return
     if not is_running:
         ydl_thread = threading.Thread(target=downloader, args=(
-            urls, ext, direc, arcBool, res[:-1]))
+            urls, ext, direc, arcBool, res[:-1], start_time, end_time))
         is_running = True
         ydl_thread.start()
     else:
@@ -108,14 +126,16 @@ playlist_index = 1
 class DownloadStoppedError(Exception):
     pass
 
+file_title = ''
 
 # Live Updation
 def progressHook(progress):
-    global on_close, playlist_index
+    global on_close, playlist_index, file_title
     if on_close:
         raise DownloadStoppedError()
         return
     file_name = progress["filename"].rsplit("\\", 1)[-1]
+    file_title = file_name
     if progress['status'] == 'downloading':
         myDown.configure(text='Downloading...', background='Red')
         total_bytes = progress.get('total_bytes')
@@ -155,6 +175,7 @@ def progressHook(progress):
         playlist_index += 1
         playlist_index = min(playlist_index, int(index_lbl_total.cget('text')))
         index_lbl_id.configure(text=playlist_index)
+
         now_lbl.configure(text=f'Done downloading: {file_name}')
     else:
         myDown.configure(text='Downloading...', background='Red')
@@ -163,16 +184,24 @@ def progressHook(progress):
 # Writing And Calling the Bat File
 
 
-def downloader(urls, ext, direc, arcBool, res):
-    global videoBool, auto_start_bool, playlist_index, is_running
+def downloader(urls, ext, direc, arcBool, res, start_time, end_time):
+    global videoBool, auto_start_bool, playlist_index, is_running, file_title
     ext = ext.split(' ', 1)[0]
+    hours, minutes, seconds = map(int, start_time.split(':'))
+    start_total_seconds = (hours * 3600) + (minutes * 60) + seconds
+    hours, minutes, seconds = map(int, end_time.split(':'))
+    end_total_seconds = (hours * 3600) + (minutes * 60) + seconds
+
     ydl_opts = {
         'format': f'bestaudio[ext={ext}]/bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio[ext=flv]',
         'outtmpl': f'{direc}\%(title)s.%(ext)s',
         'progress_hooks': [progressHook],
-    }
+
+        }
     if videoBool:
         ydl_opts['format'] = f"bv*[ext={ext}][height<={res}]+ba[ext={ext}][height<={res}]/b[ext={ext}][height<={res}]/bv*[ext={ext}][height<=1080]+ba[ext={ext}][height<=1080]/b[ext={ext}][height<=1080]/bv*+ba/b"
+
+
 
     if arcBool:
         ydl_opts['download_archive'] = os.path.join(
@@ -184,18 +213,31 @@ def downloader(urls, ext, direc, arcBool, res):
                 index_lbl_id.configure(text='1')
                 of_lbl.configure(text='of ')
                 try:
+                    if end_total_seconds > info_dict['duration'] or start_total_seconds > info_dict['duration']:
+                        messagebox.showinfo('Invalid time',
+                                            'Time is greater than video duration')
+                        myDown.configure(text='Download', background='Black')
+                        
+                        return
                     index_lbl_total.configure(text=info_dict['playlist_count'])
                 except KeyError:
                     index_lbl_total.configure(text='1')
                 ydl.download([video_url])
+                # input_file = info_dict["title"] + "." + ext
+                if start_time != end_time:
+                    tmp_output_file = file_title
+                    ffmpeg.input(os.path.join(direc, file_title), ss=start_time, to=end_time).output(tmp_output_file).run()
+                    os.remove(os.path.join(direc, file_title))
+                    os.replace(tmp_output_file, os.path.join(direc, file_title))
                 if ydl.params.get('noplaylist') or ydl.params.get('max_downloads') is None:
                     myDown.configure(text='Download', background='Black')
                     is_running = False
                     playlist_index = 1
+                    return
     except DownloadStoppedError:
         return
     except youtube_dl.DownloadError as err:
-        messagebox.showinfo('Youtube Dlp Error Occured',
+        messagebox.showerror('Youtube Dlp Error Occured',
                             f'{err}')
         myDown.configure(text='Download', background='Black')
         playlist_index = 1
@@ -370,7 +412,7 @@ chkBox.place(anchor=W, relx=0.48, rely=0.32)
 chkBox.configure(foreground='Black', background='Black',
                  activebackground='Black', activeforeground='White')
 chkBox_label = Label(root, text="Use Archive File  ?")
-chkBox_label.place(anchor=W, relx=0.52, rely=0.32)
+chkBox_label.place(anchor=W, relx=0.53, rely=0.32)
 chkBox_label.configure(background='Black', foreground='White')
 
 myTip1 = CreateToolTip(chkBox_label,
@@ -392,6 +434,48 @@ myTip1 = CreateToolTip(auto_label,
                        'Creates a shortcut file pointing to the batch script in the default startup folder (WINDOWS ONLY).'
                        'To delete the file just uncheck box')
 
+def on_entry_click(event):
+    starting_timestamp.configure(foreground='black')
+        
+def on_focus_out(event):
+    if starting_timestamp.get().strip() == "":
+        starting_timestamp.insert(0, "00:00:00")  # Add the placeholder text
+    starting_timestamp.configure(foreground='gray')
+
+starting_timestamp_lbl = Label(root, text="Start:")
+starting_timestamp_lbl.place(anchor=E, relx=0.79, rely=0.32)
+starting_timestamp_lbl.configure(background='Black', foreground='White')
+starting_timestamp = Entry(root, foreground='gray',
+                   bd=1, relief=GROOVE)
+starting_timestamp.configure(highlightthickness=0)
+starting_timestamp.place(anchor=W, relwidth=0.1, relx=0.8, rely=0.32)
+starting_timestamp.insert(0, '00:00:00')  # Insert the placeholder text
+starting_timestamp.configure(foreground='gray')
+starting_timestamp.bind("<FocusIn>", on_entry_click)
+starting_timestamp.bind("<FocusOut>", on_focus_out)
+
+ending_timestamp_lbl = Label(root, text="End:")
+ending_timestamp_lbl.place(anchor=E, relx=0.79, rely=0.43)
+ending_timestamp_lbl.configure(background='Black', foreground='White')
+ending_timestamp = Entry(root, foreground='gray',
+                   bd=1, relief=GROOVE)
+ending_timestamp.configure(highlightthickness=0)
+ending_timestamp.place(anchor=W, relwidth=0.1, relx=0.8, rely=0.43)
+ending_timestamp.insert(0, '00:00:00')  # Insert the placeholder text
+ending_timestamp.configure(foreground='gray')
+# search_box.bind("<Return>", search)
+def on_entry(event):
+    ending_timestamp.configure(foreground='black')
+def on_focus(event):
+    if ending_timestamp.get().strip() == "":
+        ending_timestamp.insert(0, "00:00:00")  # Add the placeholder text
+    ending_timestamp.configure(foreground='gray')
+ending_timestamp.bind("<FocusIn>", on_entry)
+ending_timestamp.bind("<FocusOut>", on_focus)
+
+
+
+
 # Progress Bar
 progress_bar = ttk.Progressbar(
     root, orient=HORIZONTAL, length=200, mode='determinate')
@@ -399,7 +483,7 @@ progress_bar.place(relwidth=0.75, anchor=CENTER, relx=0.5, rely=0.75)
 
 # Percentage
 percentage_lbl = Label(root, text='0%')
-percentage_lbl.place(anchor=W, relx=0.9, rely=0.75)
+percentage_lbl.place(anchor=W, relx=0.89, rely=0.75)
 percentage_lbl.configure(background='Black', foreground='#0096FF')
 
 
@@ -440,7 +524,11 @@ directory.place(anchor=W, relx=0.2, rely=0.55, relwidth=0.7)
 directory.configure(background='#0D0901', foreground='White', highlightbackground='White',
                     highlightthickness=1, borderwidth=0, highlightcolor='Grey')
 
+def set_focus(event):
+    if event.widget == root:
+        root.focus_set()
 
 # Loop Main
 root.protocol("WM_DELETE_WINDOW", autoStart)
+root.bind("<Button-1>", set_focus)
 root.mainloop()
