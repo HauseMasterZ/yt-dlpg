@@ -196,7 +196,6 @@ def downloader(urls, ext, direc, arcBool, res, start_time, end_time):
         'format': f'bestaudio[ext={ext}]/bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio[ext=flv]',
         'outtmpl': f'{direc}\%(title)s.%(ext)s',
         'progress_hooks': [progressHook],
-
         }
     if videoBool:
         ydl_opts['format'] = f"bv*[ext={ext}][height<={res}]+ba[ext={ext}][height<={res}]/b[ext={ext}][height<={res}]/bv*[ext={ext}][height<=1080]+ba[ext={ext}][height<=1080]/b[ext={ext}][height<=1080]/bv*+ba/b"
@@ -247,6 +246,8 @@ def autoStart():
     global on_close
     on_close = True
     if auto_start_bool.get() == 1:
+        import win32com.client
+        Shell = win32com.client.Dispatch("WScript.Shell")
         startup_folder = Shell.SpecialFolders("Startup")
         arcBool = arc.get()
         direc = directory.get("1.0", END)
@@ -280,8 +281,7 @@ def autoStart():
                         f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -f "bv*+ba/b[ext={ext[0]}]"  --download-archive archive.txt "{"".join(urls)}"')
         finally:
             myBat.close()
-        import win32com.client
-        Shell = win32com.client.Dispatch("WScript.Shell")
+
         startup_folder = Shell.SpecialFolders("Startup")
         shortcut_path = os.path.join(startup_folder, 'auto_start.lnk')
         target_file = ytdlp
@@ -367,7 +367,7 @@ text_box.configure(foreground='Black')
 myDown = Button(root, text="Download", command=downAction, padx=6, pady=10)
 myDown.place(anchor=E, relx=0.96, rely=0.17)
 myDown.configure(foreground='White', background='Black',
-                 activebackground='Black', activeforeground='White', relief=SUNKEN, bd=0)
+                 activebackground='Black', activeforeground='White', relief=SUNKEN, bd=0, highlightthickness=0, highlightcolor='Black')
 
 
 # Downloading Index
@@ -410,7 +410,7 @@ arc = IntVar()
 chkBox = Checkbutton(root, variable=arc)
 chkBox.place(anchor=W, relx=0.48, rely=0.32)
 chkBox.configure(foreground='Black', background='Black',
-                 activebackground='Black', activeforeground='White')
+                 activebackground='Black', activeforeground='White', highlightthickness=0, highlightcolor='Black')
 chkBox_label = Label(root, text="Use Archive File  ?")
 chkBox_label.place(anchor=W, relx=0.53, rely=0.32)
 chkBox_label.configure(background='Black', foreground='White')
@@ -425,7 +425,7 @@ auto_start_bool = IntVar()
 auto = Checkbutton(root, variable=auto_start_bool)
 auto.place(anchor=W, relx=0.48, rely=0.43)
 auto.configure(foreground='Black', background='Black',
-               activebackground='Black', activeforeground='White')
+               activebackground='Black', activeforeground='White', bd=0, highlightthickness=0, highlightcolor='Black')
 auto_label = Label(root, text="Auto Start  ?")
 auto_label.place(anchor=W, relx=0.52, rely=0.43)
 auto_label.configure(background='Black', foreground='White')
@@ -514,9 +514,9 @@ now_lbl.configure(background='Black', foreground='White')
 
 # Directory of Files Button
 filePickerButton = Button(root, text="Saving Directory: ", command=openFile)
-filePickerButton.place(anchor=W, relx=0.03, rely=0.55)
+filePickerButton.place(anchor=E, relx=0.17, rely=0.55)
 filePickerButton.configure(foreground='White', background='Black',
-                           activebackground='Black', activeforeground='White', relief=GROOVE, borderwidth=1)
+                           activebackground='Black', activeforeground='White', relief=GROOVE, borderwidth=1, highlightthickness=0, highlightcolor='Black')
 
 # Saving Path
 directory = Text(root, fg="black", highlightthickness="1", height=1)
