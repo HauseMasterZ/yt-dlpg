@@ -1,10 +1,5 @@
 
-
-
-
 # yt-dlpg
-
-
 
 <p align="center">
   <img src="https://github.com/HauseMasterZ/yt-dlpg/assets/113833707/64c20117-13a0-46ae-b4c0-47128aabffea" alt="Home Page"/>
