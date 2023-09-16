@@ -9,7 +9,13 @@ from tkinter import filedialog, messagebox, ttk
 import yt_dlp as youtube_dl
 
 urls = []
+on_close = False
+playlist_index = 1
+file_title = ""
+is_running = False
 
+class DownloadStoppedError(Exception):
+    pass
 
 class CreateToolTip(object):
     """
@@ -70,9 +76,6 @@ class CreateToolTip(object):
         self.tw = None
         if tw:
             tw.destroy()
-
-
-is_running = False
 
 
 # Main Download Button Action
@@ -140,17 +143,6 @@ def downAction():
         )
 
 
-on_close = False
-playlist_index = 1
-
-
-class DownloadStoppedError(Exception):
-    pass
-
-
-file_title = ""
-
-
 # Live Updation
 def progressHook(progress):
     global on_close, playlist_index, file_title
@@ -205,8 +197,6 @@ def progressHook(progress):
 
 
 # Writing And Calling the Bat File
-
-
 def downloader(urls, ext, direc, arcBool, res, start_time, end_time):
     global videoBool, auto_start_bool, playlist_index, is_running, file_title
     ext = ext.split(" ", 1)[0]
@@ -335,10 +325,22 @@ def autoStart():
 
     root.destroy()
 
+def set_focus(event):
+    if event.widget == root:
+        root.focus_set()
+
+# search_box.bind("<Return>", search)
+def on_entry(event):
+    ending_timestamp.configure(foreground="black")
+
+
+def on_focus(event):
+    if ending_timestamp.get().strip() == "":
+        ending_timestamp.insert(0, "00:00:00")  # Add the placeholder text
+    ending_timestamp.configure(foreground="gray")
+
 
 # Open Saving Location File Picker
-
-
 def openFile():
     filepath = filedialog.askdirectory()
     directory.delete("1.0", END)
@@ -360,265 +362,248 @@ def videoRes(event):
         myText2.place_forget()
     return
 
+if __name__ == "__main__":
+    root = Tk()
+    is_windows = os.name == "nt"
+    try:
+        if is_windows:
+            root.iconbitmap(
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.ico")
+            )
+        else:
+            root.iconbitmap(
+                "@" + os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.xbm")
+            )
+    except:
+        messagebox.showinfo("Iconbitmap icon not found", "Window Icon Cannot be loaded")
 
-# Creating root window
-root = Tk()
-is_windows = os.name == "nt"
-try:
-    if is_windows:
-        root.iconbitmap(
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.ico")
-        )
-    else:
-        root.iconbitmap(
-            "@" + os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.xbm")
-        )
-except:
-    messagebox.showinfo("Iconbitmap icon not found", "Window Icon Cannot be loaded")
+    # Resizing Root Window
+    root.geometry(f"{root.winfo_screenwidth()//2}x{root.winfo_screenheight()//2}")
+    root.title("YouTube dlp gui")
+    root.configure(background="Black")
 
-# Resizing Root Window
-root.geometry(f"{root.winfo_screenwidth()//2}x{root.winfo_screenheight()//2}")
-root.title("YouTube dlp gui")
-root.configure(background="Black")
+    # Heading
+    title = Label(root, text="YouTube dl Plus GUI ~ HauseMaster", font=("Aerial", 13))
+    title.place(anchor=CENTER, relx=0.5, y=10)
+    title.configure(foreground="White", background="Black")
 
-# Heading
-title = Label(root, text="YouTube dl Plus GUI ~ HauseMaster", font=("Aerial", 13))
-title.place(anchor=CENTER, relx=0.5, y=10)
-title.configure(foreground="White", background="Black")
-
-# URL Label
-myURL = Label(root, text="Enter URL (CSV):")
-myURL.place(anchor=W, relx=0.02, rely=0.17)
-myURL.configure(foreground="White", background="Black")
-
-
-# Main URL Text Box
-text_box = Text(root, fg="black", highlightthickness="1", height=2, bg="yellow")
-text_box.place(anchor=CENTER, relx=0.5, rely=0.17, relwidth=0.6, relheight=0.1)
-text_box.configure(foreground="Black")
+    # URL Label
+    myURL = Label(root, text="Enter URL (CSV):")
+    myURL.place(anchor=W, relx=0.02, rely=0.17)
+    myURL.configure(foreground="White", background="Black")
 
 
-# Main Download Button
-myDown = Button(root, text="Download", command=downAction, padx=6, pady=10)
-myDown.place(anchor=E, relx=0.96, rely=0.17)
-myDown.configure(
-    foreground="White",
-    background="Black",
-    activebackground="Black",
-    activeforeground="White",
-    relief=SUNKEN,
-    bd=0,
-    highlightthickness=0,
-    highlightcolor="Black",
-)
+    # Main URL Text Box
+    text_box = Text(root, fg="black", highlightthickness="1", height=2, bg="yellow")
+    text_box.place(anchor=CENTER, relx=0.5, rely=0.17, relwidth=0.6, relheight=0.1)
+    text_box.configure(foreground="Black")
 
 
-# Downloading Index
-index_lbl_id = Label(root)
-index_lbl_id.configure(background="black", foreground="#00d10a")
-of_lbl = Label(root)
-of_lbl.configure(background="black", foreground="White")
-index_lbl_total = Label(root)
-index_lbl_total.configure(background="black", foreground="#0096FF")
+    # Main Download Button
+    myDown = Button(root, text="Download", command=downAction, padx=6, pady=10)
+    myDown.place(anchor=E, relx=0.96, rely=0.17)
+    myDown.configure(
+        foreground="White",
+        background="Black",
+        activebackground="Black",
+        activeforeground="White",
+        relief=SUNKEN,
+        bd=0,
+        highlightthickness=0,
+        highlightcolor="Black",
+    )
 
 
-# Extension Drop Down Menu
-myText1 = Label(root, text="Select Extension:")
-myText1.place(anchor=W, relx=0.02, rely=0.32)
-myText1.configure(foreground="White", background="Black")
-clicked = StringVar()
-drop = ttk.Combobox(root, width=27, textvariable=clicked)
-drop["values"] = [
-    "m4a (Audio)",
-    "aac (Audio)",
-    "flv (Audio)",
-    "mp3 (Audio)",
-    "wav (Audio)",
-    "webm (Video)",
-    "ogg (Video)",
-    "3gp (Video)",
-    "mp4 (Video)",
-]
-drop.current(0)
-drop.place(anchor=W, relx=0.2, rely=0.32)
+    # Downloading Index
+    index_lbl_id = Label(root)
+    index_lbl_id.configure(background="black", foreground="#00d10a")
+    of_lbl = Label(root)
+    of_lbl.configure(background="black", foreground="White")
+    index_lbl_total = Label(root)
+    index_lbl_total.configure(background="black", foreground="#0096FF")
 
 
-# Resolution Drop Down
-myText2 = ttk.Label(root, text="Select Resolution:")
-myText2.configure(foreground="White", background="Black")
-clickedRes = StringVar()
-lst = ["144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p"]
-resDrop = ttk.Combobox(root, values=lst, width=27, textvariable=clickedRes)
-resDrop.place(anchor=W, relx=0.2, rely=0.43)
-resDrop.current(4)
-resDrop["state"] = DISABLED
-videoBool = False
-drop.bind("<<ComboboxSelected>>", videoRes)
+    # Extension Drop Down Menu
+    myText1 = Label(root, text="Select Extension:")
+    myText1.place(anchor=W, relx=0.02, rely=0.32)
+    myText1.configure(foreground="White", background="Black")
+    clicked = StringVar()
+    drop = ttk.Combobox(root, width=27, textvariable=clicked)
+    drop["values"] = [
+        "m4a (Audio)",
+        "aac (Audio)",
+        "flv (Audio)",
+        "mp3 (Audio)",
+        "wav (Audio)",
+        "webm (Video)",
+        "ogg (Video)",
+        "3gp (Video)",
+        "mp4 (Video)",
+    ]
+    drop.current(0)
+    drop.place(anchor=W, relx=0.2, rely=0.32)
 
 
-# Archive File Checkbox
-arc = IntVar()
-chkBox = Checkbutton(root, variable=arc)
-chkBox.place(anchor=W, relx=0.48, rely=0.32)
-chkBox.configure(
-    foreground="Black",
-    background="Black",
-    activebackground="Black",
-    activeforeground="White",
-    highlightthickness=0,
-    highlightcolor="Black",
-)
-chkBox_label = Label(root, text="Use Archive File  ?")
-chkBox_label.place(anchor=W, relx=0.53, rely=0.32)
-chkBox_label.configure(background="Black", foreground="White")
-
-myTip1 = CreateToolTip(
-    chkBox_label,
-    "Creates a text file which stores all the downloaded files."
-    "So that it won't download the same file again.",
-)
+    # Resolution Drop Down
+    myText2 = ttk.Label(root, text="Select Resolution:")
+    myText2.configure(foreground="White", background="Black")
+    clickedRes = StringVar()
+    lst = ["144p", "240p", "360p", "480p", "720p", "1080p", "1440p", "2160p"]
+    resDrop = ttk.Combobox(root, values=lst, width=27, textvariable=clickedRes)
+    resDrop.place(anchor=W, relx=0.2, rely=0.43)
+    resDrop.current(4)
+    resDrop["state"] = DISABLED
+    videoBool = False
+    drop.bind("<<ComboboxSelected>>", videoRes)
 
 
-# Auto Start Checkbox
-auto_start_bool = IntVar()
-auto = Checkbutton(root, variable=auto_start_bool)
-auto.place(anchor=W, relx=0.48, rely=0.43)
-auto.configure(
-    foreground="Black",
-    background="Black",
-    activebackground="Black",
-    activeforeground="White",
-    bd=0,
-    highlightthickness=0,
-    highlightcolor="Black",
-)
-auto_label = Label(root, text="Auto Start  ?")
-auto_label.place(anchor=W, relx=0.52, rely=0.43)
-auto_label.configure(background="Black", foreground="White")
+    # Archive File Checkbox
+    arc = IntVar()
+    chkBox = Checkbutton(root, variable=arc)
+    chkBox.place(anchor=W, relx=0.48, rely=0.32)
+    chkBox.configure(
+        foreground="Black",
+        background="Black",
+        activebackground="Black",
+        activeforeground="White",
+        highlightthickness=0,
+        highlightcolor="Black",
+    )
+    chkBox_label = Label(root, text="Use Archive File  ?")
+    chkBox_label.place(anchor=W, relx=0.53, rely=0.32)
+    chkBox_label.configure(background="Black", foreground="White")
 
-myTip1 = CreateToolTip(
-    auto_label,
-    "Creates a shortcut file pointing to the batch script in the default startup folder (WINDOWS ONLY)."
-    "To delete the file just uncheck box",
-)
-
-
-def on_entry_click(event):
-    starting_timestamp.configure(foreground="black")
+    myTip1 = CreateToolTip(
+        chkBox_label,
+        "Creates a text file which stores all the downloaded files."
+        "So that it won't download the same file again.",
+    )
 
 
-def on_focus_out(event):
-    if starting_timestamp.get().strip() == "":
-        starting_timestamp.insert(0, "00:00:00")  # Add the placeholder text
+    # Auto Start Checkbox
+    auto_start_bool = IntVar()
+    auto = Checkbutton(root, variable=auto_start_bool)
+    auto.place(anchor=W, relx=0.48, rely=0.43)
+    auto.configure(
+        foreground="Black",
+        background="Black",
+        activebackground="Black",
+        activeforeground="White",
+        bd=0,
+        highlightthickness=0,
+        highlightcolor="Black",
+    )
+    auto_label = Label(root, text="Auto Start  ?")
+    auto_label.place(anchor=W, relx=0.52, rely=0.43)
+    auto_label.configure(background="Black", foreground="White")
+
+    myTip1 = CreateToolTip(
+        auto_label,
+        "Creates a shortcut file pointing to the batch script in the default startup folder (WINDOWS ONLY)."
+        "To delete the file just uncheck box",
+    )
+
+
+    def on_entry_click(event):
+        starting_timestamp.configure(foreground="black")
+
+
+    def on_focus_out(event):
+        if starting_timestamp.get().strip() == "":
+            starting_timestamp.insert(0, "00:00:00")  # Add the placeholder text
+        starting_timestamp.configure(foreground="gray")
+
+
+    starting_timestamp_lbl = Label(root, text="Start:")
+    starting_timestamp_lbl.place(anchor=E, relx=0.79, rely=0.32)
+    starting_timestamp_lbl.configure(background="Black", foreground="White")
+    starting_timestamp = Entry(root, foreground="gray", bd=1, relief=GROOVE)
+    starting_timestamp.configure(highlightthickness=0)
+    starting_timestamp.place(anchor=W, relwidth=0.1, relx=0.8, rely=0.32)
+    starting_timestamp.insert(0, "00:00:00")  # Insert the placeholder text
     starting_timestamp.configure(foreground="gray")
+    starting_timestamp.bind("<FocusIn>", on_entry_click)
+    starting_timestamp.bind("<FocusOut>", on_focus_out)
 
-
-starting_timestamp_lbl = Label(root, text="Start:")
-starting_timestamp_lbl.place(anchor=E, relx=0.79, rely=0.32)
-starting_timestamp_lbl.configure(background="Black", foreground="White")
-starting_timestamp = Entry(root, foreground="gray", bd=1, relief=GROOVE)
-starting_timestamp.configure(highlightthickness=0)
-starting_timestamp.place(anchor=W, relwidth=0.1, relx=0.8, rely=0.32)
-starting_timestamp.insert(0, "00:00:00")  # Insert the placeholder text
-starting_timestamp.configure(foreground="gray")
-starting_timestamp.bind("<FocusIn>", on_entry_click)
-starting_timestamp.bind("<FocusOut>", on_focus_out)
-
-ending_timestamp_lbl = Label(root, text="End:")
-ending_timestamp_lbl.place(anchor=E, relx=0.79, rely=0.43)
-ending_timestamp_lbl.configure(background="Black", foreground="White")
-ending_timestamp = Entry(root, foreground="gray", bd=1, relief=GROOVE)
-ending_timestamp.configure(highlightthickness=0)
-ending_timestamp.place(anchor=W, relwidth=0.1, relx=0.8, rely=0.43)
-ending_timestamp.insert(0, "00:00:00")  # Insert the placeholder text
-ending_timestamp.configure(foreground="gray")
-
-
-# search_box.bind("<Return>", search)
-def on_entry(event):
-    ending_timestamp.configure(foreground="black")
-
-
-def on_focus(event):
-    if ending_timestamp.get().strip() == "":
-        ending_timestamp.insert(0, "00:00:00")  # Add the placeholder text
+    ending_timestamp_lbl = Label(root, text="End:")
+    ending_timestamp_lbl.place(anchor=E, relx=0.79, rely=0.43)
+    ending_timestamp_lbl.configure(background="Black", foreground="White")
+    ending_timestamp = Entry(root, foreground="gray", bd=1, relief=GROOVE)
+    ending_timestamp.configure(highlightthickness=0)
+    ending_timestamp.place(anchor=W, relwidth=0.1, relx=0.8, rely=0.43)
+    ending_timestamp.insert(0, "00:00:00")  # Insert the placeholder text
     ending_timestamp.configure(foreground="gray")
 
 
-ending_timestamp.bind("<FocusIn>", on_entry)
-ending_timestamp.bind("<FocusOut>", on_focus)
+    ending_timestamp.bind("<FocusIn>", on_entry)
+    ending_timestamp.bind("<FocusOut>", on_focus)
 
 
-# Progress Bar
-progress_bar = ttk.Progressbar(root, orient=HORIZONTAL, length=200, mode="determinate")
-progress_bar.place(relwidth=0.75, anchor=CENTER, relx=0.5, rely=0.75)
+    # Progress Bar
+    progress_bar = ttk.Progressbar(root, orient=HORIZONTAL, length=200, mode="determinate")
+    progress_bar.place(relwidth=0.75, anchor=CENTER, relx=0.5, rely=0.75)
 
-# Percentage
-percentage_lbl = Label(root, text="0%")
-percentage_lbl.place(anchor=W, relx=0.89, rely=0.75)
-percentage_lbl.configure(background="Black", foreground="#0096FF")
-
-
-note_lbl = Label(root, text=" ? ")
-note_lbl.place(anchor=W, relx=0.94, rely=0.75)
-note_lbl.configure(background="Black", foreground="White")
-myTip3 = CreateToolTip(
-    note_lbl,
-    "Note: If the format of download is different than the one you selected then "
-    "the format is not available and its choosing the next best available format.",
-)
-
-# Size of file
-size_lbl = Label(root)
-size_lbl.configure(background="black", foreground="White")
-
-# Speed
-speed_lbl = Label(root)
-speed_lbl.configure(background="Black", foreground="#00d10a")
+    # Percentage
+    percentage_lbl = Label(root, text="0%")
+    percentage_lbl.place(anchor=W, relx=0.89, rely=0.75)
+    percentage_lbl.configure(background="Black", foreground="#0096FF")
 
 
-# ETA
-eta_lbl = Label(root)
-eta_lbl.configure(background="Black", foreground="Yellow")
+    note_lbl = Label(root, text=" ? ")
+    note_lbl.place(anchor=W, relx=0.94, rely=0.75)
+    note_lbl.configure(background="Black", foreground="White")
+    myTip3 = CreateToolTip(
+        note_lbl,
+        "Note: If the format of download is different than the one you selected then "
+        "the format is not available and its choosing the next best available format.",
+    )
 
-# Now Downloading
-now_lbl = Label(root)
-now_lbl.configure(background="Black", foreground="White")
+    # Size of file
+    size_lbl = Label(root)
+    size_lbl.configure(background="black", foreground="White")
 
-
-# Directory of Files Button
-filePickerButton = Button(root, text="Saving Directory: ", command=openFile)
-filePickerButton.place(anchor=E, relx=0.17, rely=0.55)
-filePickerButton.configure(
-    foreground="White",
-    background="Black",
-    activebackground="Black",
-    activeforeground="White",
-    relief=GROOVE,
-    borderwidth=1,
-    highlightthickness=0,
-    highlightcolor="Black",
-)
-
-# Saving Path
-directory = Text(root, fg="black", highlightthickness="1", height=1)
-directory.place(anchor=W, relx=0.2, rely=0.55, relwidth=0.7)
-directory.configure(
-    background="#0D0901",
-    foreground="White",
-    highlightbackground="White",
-    highlightthickness=1,
-    borderwidth=0,
-    highlightcolor="Grey",
-)
+    # Speed
+    speed_lbl = Label(root)
+    speed_lbl.configure(background="Black", foreground="#00d10a")
 
 
-def set_focus(event):
-    if event.widget == root:
-        root.focus_set()
+    # ETA
+    eta_lbl = Label(root)
+    eta_lbl.configure(background="Black", foreground="Yellow")
+
+    # Now Downloading
+    now_lbl = Label(root)
+    now_lbl.configure(background="Black", foreground="White")
 
 
-# Loop Main
-root.protocol("WM_DELETE_WINDOW", autoStart)
-root.bind("<Button-1>", set_focus)
-root.mainloop()
+    # Directory of Files Button
+    filePickerButton = Button(root, text="Saving Directory: ", command=openFile)
+    filePickerButton.place(anchor=E, relx=0.17, rely=0.55)
+    filePickerButton.configure(
+        foreground="White",
+        background="Black",
+        activebackground="Black",
+        activeforeground="White",
+        relief=GROOVE,
+        borderwidth=1,
+        highlightthickness=0,
+        highlightcolor="Black",
+    )
+
+    # Saving Path
+    directory = Text(root, fg="black", highlightthickness="1", height=1)
+    directory.place(anchor=W, relx=0.2, rely=0.55, relwidth=0.7)
+    directory.configure(
+        background="#0D0901",
+        foreground="White",
+        highlightbackground="White",
+        highlightthickness=1,
+        borderwidth=0,
+        highlightcolor="Grey",
+    )
+
+
+    # Loop Main
+    root.protocol("WM_DELETE_WINDOW", autoStart)
+    root.bind("<Button-1>", set_focus)
+    root.mainloop()
