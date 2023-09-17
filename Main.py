@@ -11,11 +11,12 @@ import yt_dlp as youtube_dl
 urls = []
 on_close = False
 playlist_index = 1
-file_title = ""
 is_running = False
+
 
 class DownloadStoppedError(Exception):
     pass
+
 
 class CreateToolTip(object):
     """
@@ -79,20 +80,17 @@ class CreateToolTip(object):
 
 
 # Main Download Button Action
-def downAction():
-    global ydl_thread_global, urls, is_running
-    urls = text_box.get("1.0", END).split(",")
+def downAction() -> None:
+    global urls, is_running
+    urls = [url.strip() for url in text_box.get("1.0", END).split(",")]
     arcBool = arc.get()
-    for i in range(len(urls)):
-        urls[i] = urls[i].strip(" ")
-    urls[-1] = urls[-1].strip("\n")
     if urls[0] == "":
         tkm.showinfo("Empty URL", "Please Enter Atleast 1 Valid URL")
         return
-    ext = clicked.get()
+    ext = clicked.get().split(" ", 1)[0]
+
     res = clickedRes.get()
-    direc = directory.get("1.0", END)
-    direc = direc.strip("\n")
+    direc = directory.get("1.0", END).strip("\n")
     if direc == "":
         tkm.showinfo("Invalid Directory", "Enter Valid Directory")
         return
@@ -109,11 +107,9 @@ def downAction():
     end_time = ending_timestamp.get()
     valid_time_format = "%H:%M:%S"
     try:
-        # Validate start time
         start_time_obj = datetime.datetime.strptime(
             start_time, valid_time_format
         ).time()
-        # Validate end time
         end_time_obj = datetime.datetime.strptime(end_time, valid_time_format).time()
     except ValueError:
         messagebox.showinfo(
@@ -121,7 +117,6 @@ def downAction():
         )
         myDown.configure(text="Download", background="Black")
         return
-    # Check if start time is before end time
     if start_time_obj > end_time_obj:
         messagebox.showinfo(
             "Invalid time format", "Start time should be before end time"
@@ -144,13 +139,12 @@ def downAction():
 
 
 # Live Updation
-def progressHook(progress):
-    global on_close, playlist_index, file_title
+def progressHook(progress: dict) -> None:
+    global on_close, playlist_index
     if on_close:
         raise DownloadStoppedError()
         return
     file_name = progress["filename"].rsplit("\\", 1)[-1]
-    file_title = file_name
     if progress["status"] == "downloading":
         myDown.configure(text="Downloading...", background="Red")
         total_bytes = progress.get("total_bytes")
@@ -197,15 +191,24 @@ def progressHook(progress):
 
 
 # Writing And Calling the Bat File
-def downloader(urls, ext, direc, arcBool, res, start_time, end_time):
-    global videoBool, auto_start_bool, playlist_index, is_running, file_title
-    ext = ext.split(" ", 1)[0]
+def downloader(
+    urls: list[str],
+    ext: str,
+    direc: str,
+    arcBool: bool,
+    res: int,
+    start_time: str,
+    end_time: str,
+) -> None:
+    global videoBool, auto_start_bool, playlist_index, is_running
     hours, minutes, seconds = map(int, start_time.split(":"))
     start_total_seconds = (hours * 3600) + (minutes * 60) + seconds
     hours, minutes, seconds = map(int, end_time.split(":"))
     end_total_seconds = (hours * 3600) + (minutes * 60) + seconds
     ydl_opts = {
-        "format": f"bestaudio[ext={ext}]/bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio[ext=flv]",
+        "format": f"bestaudio[ext={ext}]/bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio[ext=flv]"
+        if videoBool == False
+        else f"bv*[ext={ext}][height<={res}]+ba[ext={ext}][height<={res}]/b[ext={ext}][height<={res}]/bv*[ext={ext}][height<=1080]+ba[ext={ext}][height<=1080]/b[ext={ext}][height<=1080]/bv*+ba/b",
         "outtmpl": f"{direc}\%(title)s.%(ext)s",
         "progress_hooks": [progressHook],
         "postprocessor_args": [
@@ -216,16 +219,12 @@ def downloader(urls, ext, direc, arcBool, res, start_time, end_time):
         ]
         if start_time != end_time
         else [],
-    }
-    if videoBool:
-        ydl_opts[
-            "format"
-        ] = f"bv*[ext={ext}][height<={res}]+ba[ext={ext}][height<={res}]/b[ext={ext}][height<={res}]/bv*[ext={ext}][height<=1080]+ba[ext={ext}][height<=1080]/b[ext={ext}][height<=1080]/bv*+ba/b"
-
-    if arcBool:
-        ydl_opts["download_archive"] = os.path.join(
+        "download_archive": os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "archive.txt"
         )
+        if arcBool
+        else None,
+    }
     try:
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
             for video_url in urls:
@@ -262,7 +261,7 @@ def downloader(urls, ext, direc, arcBool, res, start_time, end_time):
         playlist_index = 1
 
 
-def autoStart():
+def autoStart() -> None:
     global on_close
     on_close = True
     if auto_start_bool.get() == 1:
@@ -322,19 +321,20 @@ def autoStart():
         os.remove(os.path.join(here, "auto_start.lnk"))
     except:
         pass
-
     root.destroy()
 
-def set_focus(event):
+
+def set_focus(event: Event) -> None:
     if event.widget == root:
         root.focus_set()
 
+
 # search_box.bind("<Return>", search)
-def on_entry(event):
+def on_entry(event: Event) -> None:
     ending_timestamp.configure(foreground="black")
 
 
-def on_focus(event):
+def on_focus(event: Event) -> None:
     if ending_timestamp.get().strip() == "":
         ending_timestamp.insert(0, "00:00:00")  # Add the placeholder text
     ending_timestamp.configure(foreground="gray")
@@ -348,7 +348,7 @@ def openFile():
 
 
 # Resolution Drop Down
-def videoRes(event):
+def videoRes(event: Event) -> None:
     global videoBool
     global resDrop
     ext = clicked.get()
@@ -362,6 +362,7 @@ def videoRes(event):
         myText2.place_forget()
     return
 
+
 if __name__ == "__main__":
     root = Tk()
     is_windows = os.name == "nt"
@@ -372,7 +373,8 @@ if __name__ == "__main__":
             )
         else:
             root.iconbitmap(
-                "@" + os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.xbm")
+                "@"
+                + os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.xbm")
             )
     except:
         messagebox.showinfo("Iconbitmap icon not found", "Window Icon Cannot be loaded")
@@ -392,12 +394,10 @@ if __name__ == "__main__":
     myURL.place(anchor=W, relx=0.02, rely=0.17)
     myURL.configure(foreground="White", background="Black")
 
-
     # Main URL Text Box
     text_box = Text(root, fg="black", highlightthickness="1", height=2, bg="yellow")
     text_box.place(anchor=CENTER, relx=0.5, rely=0.17, relwidth=0.6, relheight=0.1)
     text_box.configure(foreground="Black")
-
 
     # Main Download Button
     myDown = Button(root, text="Download", command=downAction, padx=6, pady=10)
@@ -413,7 +413,6 @@ if __name__ == "__main__":
         highlightcolor="Black",
     )
 
-
     # Downloading Index
     index_lbl_id = Label(root)
     index_lbl_id.configure(background="black", foreground="#00d10a")
@@ -421,7 +420,6 @@ if __name__ == "__main__":
     of_lbl.configure(background="black", foreground="White")
     index_lbl_total = Label(root)
     index_lbl_total.configure(background="black", foreground="#0096FF")
-
 
     # Extension Drop Down Menu
     myText1 = Label(root, text="Select Extension:")
@@ -443,7 +441,6 @@ if __name__ == "__main__":
     drop.current(0)
     drop.place(anchor=W, relx=0.2, rely=0.32)
 
-
     # Resolution Drop Down
     myText2 = ttk.Label(root, text="Select Resolution:")
     myText2.configure(foreground="White", background="Black")
@@ -455,7 +452,6 @@ if __name__ == "__main__":
     resDrop["state"] = DISABLED
     videoBool = False
     drop.bind("<<ComboboxSelected>>", videoRes)
-
 
     # Archive File Checkbox
     arc = IntVar()
@@ -479,7 +475,6 @@ if __name__ == "__main__":
         "So that it won't download the same file again.",
     )
 
-
     # Auto Start Checkbox
     auto_start_bool = IntVar()
     auto = Checkbutton(root, variable=auto_start_bool)
@@ -499,20 +494,17 @@ if __name__ == "__main__":
 
     myTip1 = CreateToolTip(
         auto_label,
-        "Creates a shortcut file pointing to the batch script in the default startup folder (WINDOWS ONLY)."
+        "(WINDOWS ONLY) Creates a shortcut file pointing to the batch script in the default startup folder."
         "To delete the file just uncheck box",
     )
 
-
     def on_entry_click(event):
         starting_timestamp.configure(foreground="black")
-
 
     def on_focus_out(event):
         if starting_timestamp.get().strip() == "":
             starting_timestamp.insert(0, "00:00:00")  # Add the placeholder text
         starting_timestamp.configure(foreground="gray")
-
 
     starting_timestamp_lbl = Label(root, text="Start:")
     starting_timestamp_lbl.place(anchor=E, relx=0.79, rely=0.32)
@@ -534,13 +526,13 @@ if __name__ == "__main__":
     ending_timestamp.insert(0, "00:00:00")  # Insert the placeholder text
     ending_timestamp.configure(foreground="gray")
 
-
     ending_timestamp.bind("<FocusIn>", on_entry)
     ending_timestamp.bind("<FocusOut>", on_focus)
 
-
     # Progress Bar
-    progress_bar = ttk.Progressbar(root, orient=HORIZONTAL, length=200, mode="determinate")
+    progress_bar = ttk.Progressbar(
+        root, orient=HORIZONTAL, length=200, mode="determinate"
+    )
     progress_bar.place(relwidth=0.75, anchor=CENTER, relx=0.5, rely=0.75)
 
     # Percentage
@@ -548,13 +540,12 @@ if __name__ == "__main__":
     percentage_lbl.place(anchor=W, relx=0.89, rely=0.75)
     percentage_lbl.configure(background="Black", foreground="#0096FF")
 
-
     note_lbl = Label(root, text=" ? ")
     note_lbl.place(anchor=W, relx=0.94, rely=0.75)
     note_lbl.configure(background="Black", foreground="White")
     myTip3 = CreateToolTip(
         note_lbl,
-        "Note: If the format of download is different than the one you selected then "
+        "If the format of download is different than the one you selected then "
         "the format is not available and its choosing the next best available format.",
     )
 
@@ -566,7 +557,6 @@ if __name__ == "__main__":
     speed_lbl = Label(root)
     speed_lbl.configure(background="Black", foreground="#00d10a")
 
-
     # ETA
     eta_lbl = Label(root)
     eta_lbl.configure(background="Black", foreground="Yellow")
@@ -574,7 +564,6 @@ if __name__ == "__main__":
     # Now Downloading
     now_lbl = Label(root)
     now_lbl.configure(background="Black", foreground="White")
-
 
     # Directory of Files Button
     filePickerButton = Button(root, text="Saving Directory: ", command=openFile)
@@ -601,7 +590,6 @@ if __name__ == "__main__":
         borderwidth=0,
         highlightcolor="Grey",
     )
-
 
     # Loop Main
     root.protocol("WM_DELETE_WINDOW", autoStart)
