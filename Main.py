@@ -4,8 +4,6 @@ import threading
 import tkinter.messagebox as tkm
 from tkinter import *
 from tkinter import filedialog, messagebox, ttk
-
-# import ffmpeg
 import yt_dlp as youtube_dl
 
 urls = []
@@ -13,10 +11,8 @@ on_close = False
 playlist_index = 1
 is_running = False
 
-
 class DownloadStoppedError(Exception):
     pass
-
 
 class CreateToolTip(object):
     """
@@ -78,8 +74,6 @@ class CreateToolTip(object):
         if tw:
             tw.destroy()
 
-
-# Main Download Button Action
 def downAction() -> None:
     global urls, is_running
     urls = [url.strip() for url in text_box.get("1.0", END).split(",")]
@@ -88,7 +82,6 @@ def downAction() -> None:
         tkm.showinfo("Empty URL", "Please Enter Atleast 1 Valid URL")
         return
     ext = clicked.get().split(" ", 1)[0]
-
     res = clickedRes.get()
     direc = directory.get("1.0", END).strip("\n")
     if direc == "":
@@ -137,8 +130,6 @@ def downAction() -> None:
             "Please Wait till the current dowload is finished.",
         )
 
-
-# Live Updation
 def progressHook(progress: dict) -> None:
     global on_close, playlist_index
     if on_close:
@@ -189,8 +180,6 @@ def progressHook(progress: dict) -> None:
     else:
         myDown.configure(text="Downloading...", background="Red")
 
-
-# Writing And Calling the Bat File
 def downloader(
     urls: list[str],
     ext: str,
@@ -260,7 +249,6 @@ def downloader(
         myDown.configure(text="Download", background="Black")
         playlist_index = 1
 
-
 def autoStart() -> None:
     global on_close
     on_close = True
@@ -323,31 +311,23 @@ def autoStart() -> None:
         pass
     root.destroy()
 
-
 def set_focus(event: Event) -> None:
     if event.widget == root:
         root.focus_set()
 
-
-# search_box.bind("<Return>", search)
 def on_entry(event: Event) -> None:
     ending_timestamp.configure(foreground="black")
-
 
 def on_focus(event: Event) -> None:
     if ending_timestamp.get().strip() == "":
         ending_timestamp.insert(0, "00:00:00")  # Add the placeholder text
     ending_timestamp.configure(foreground="gray")
 
-
-# Open Saving Location File Picker
-def openFile():
+def openFile() -> None:
     filepath = filedialog.askdirectory()
     directory.delete("1.0", END)
     directory.insert("1.0", filepath)
 
-
-# Resolution Drop Down
 def videoRes(event: Event) -> None:
     global videoBool
     global resDrop
@@ -361,7 +341,6 @@ def videoRes(event: Event) -> None:
         resDrop["state"] = DISABLED
         myText2.place_forget()
     return
-
 
 if __name__ == "__main__":
     root = Tk()
@@ -379,27 +358,22 @@ if __name__ == "__main__":
     except:
         messagebox.showinfo("Iconbitmap icon not found", "Window Icon Cannot be loaded")
 
-    # Resizing Root Window
     root.geometry(f"{root.winfo_screenwidth()//2}x{root.winfo_screenheight()//2}")
     root.title("YouTube dlp gui")
     root.configure(background="Black")
 
-    # Heading
     title = Label(root, text="YouTube dl Plus GUI ~ HauseMaster", font=("Aerial", 13))
     title.place(anchor=CENTER, relx=0.5, y=10)
     title.configure(foreground="White", background="Black")
 
-    # URL Label
     myURL = Label(root, text="Enter URL (CSV):")
     myURL.place(anchor=W, relx=0.02, rely=0.17)
     myURL.configure(foreground="White", background="Black")
 
-    # Main URL Text Box
     text_box = Text(root, fg="black", highlightthickness="1", height=2, bg="yellow")
     text_box.place(anchor=CENTER, relx=0.5, rely=0.17, relwidth=0.6, relheight=0.1)
     text_box.configure(foreground="Black")
 
-    # Main Download Button
     myDown = Button(root, text="Download", command=downAction, padx=6, pady=10)
     myDown.place(anchor=E, relx=0.96, rely=0.17)
     myDown.configure(
@@ -413,7 +387,6 @@ if __name__ == "__main__":
         highlightcolor="Black",
     )
 
-    # Downloading Index
     index_lbl_id = Label(root)
     index_lbl_id.configure(background="black", foreground="#00d10a")
     of_lbl = Label(root)
@@ -421,7 +394,6 @@ if __name__ == "__main__":
     index_lbl_total = Label(root)
     index_lbl_total.configure(background="black", foreground="#0096FF")
 
-    # Extension Drop Down Menu
     myText1 = Label(root, text="Select Extension:")
     myText1.place(anchor=W, relx=0.02, rely=0.32)
     myText1.configure(foreground="White", background="Black")
@@ -440,8 +412,6 @@ if __name__ == "__main__":
     ]
     drop.current(0)
     drop.place(anchor=W, relx=0.2, rely=0.32)
-
-    # Resolution Drop Down
     myText2 = ttk.Label(root, text="Select Resolution:")
     myText2.configure(foreground="White", background="Black")
     clickedRes = StringVar()
@@ -452,8 +422,6 @@ if __name__ == "__main__":
     resDrop["state"] = DISABLED
     videoBool = False
     drop.bind("<<ComboboxSelected>>", videoRes)
-
-    # Archive File Checkbox
     arc = IntVar()
     chkBox = Checkbutton(root, variable=arc)
     chkBox.place(anchor=W, relx=0.48, rely=0.32)
@@ -475,7 +443,6 @@ if __name__ == "__main__":
         "So that it won't download the same file again.",
     )
 
-    # Auto Start Checkbox
     auto_start_bool = IntVar()
     auto = Checkbutton(root, variable=auto_start_bool)
     auto.place(anchor=W, relx=0.48, rely=0.43)
@@ -498,10 +465,10 @@ if __name__ == "__main__":
         "To delete the file just uncheck box",
     )
 
-    def on_entry_click(event):
+    def on_entry_click(event: Event) -> None:
         starting_timestamp.configure(foreground="black")
 
-    def on_focus_out(event):
+    def on_focus_out(event: Event) -> None:
         if starting_timestamp.get().strip() == "":
             starting_timestamp.insert(0, "00:00:00")  # Add the placeholder text
         starting_timestamp.configure(foreground="gray")
@@ -529,13 +496,11 @@ if __name__ == "__main__":
     ending_timestamp.bind("<FocusIn>", on_entry)
     ending_timestamp.bind("<FocusOut>", on_focus)
 
-    # Progress Bar
     progress_bar = ttk.Progressbar(
         root, orient=HORIZONTAL, length=200, mode="determinate"
     )
     progress_bar.place(relwidth=0.75, anchor=CENTER, relx=0.5, rely=0.75)
 
-    # Percentage
     percentage_lbl = Label(root, text="0%")
     percentage_lbl.place(anchor=W, relx=0.89, rely=0.75)
     percentage_lbl.configure(background="Black", foreground="#0096FF")
@@ -549,23 +514,18 @@ if __name__ == "__main__":
         "the format is not available and its choosing the next best available format.",
     )
 
-    # Size of file
     size_lbl = Label(root)
     size_lbl.configure(background="black", foreground="White")
 
-    # Speed
     speed_lbl = Label(root)
     speed_lbl.configure(background="Black", foreground="#00d10a")
 
-    # ETA
     eta_lbl = Label(root)
     eta_lbl.configure(background="Black", foreground="Yellow")
 
-    # Now Downloading
     now_lbl = Label(root)
     now_lbl.configure(background="Black", foreground="White")
 
-    # Directory of Files Button
     filePickerButton = Button(root, text="Saving Directory: ", command=openFile)
     filePickerButton.place(anchor=E, relx=0.17, rely=0.55)
     filePickerButton.configure(
@@ -579,7 +539,6 @@ if __name__ == "__main__":
         highlightcolor="Black",
     )
 
-    # Saving Path
     directory = Text(root, fg="black", highlightthickness="1", height=1)
     directory.place(anchor=W, relx=0.2, rely=0.55, relwidth=0.7)
     directory.configure(
@@ -591,7 +550,6 @@ if __name__ == "__main__":
         highlightcolor="Grey",
     )
 
-    # Loop Main
     root.protocol("WM_DELETE_WINDOW", autoStart)
     root.bind("<Button-1>", set_focus)
     root.mainloop()
