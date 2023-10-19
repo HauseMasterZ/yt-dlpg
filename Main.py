@@ -348,12 +348,12 @@ if __name__ == "__main__":
     try:
         if is_windows:
             root.iconbitmap(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.ico")
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/icons/icon.ico")
             )
         else:
             root.iconbitmap(
                 "@"
-                + os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.xbm")
+                + os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/icons/icon.xbm")
             )
     except:
         messagebox.showinfo("Iconbitmap icon not found", "Window Icon Cannot be loaded")
