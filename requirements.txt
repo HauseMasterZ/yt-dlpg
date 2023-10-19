@@ -1,2 +1,2 @@
-ffmpeg_python==0.2.0
-yt_dlp==2023.7.6
+ffmpeg_python
+yt_dlp
