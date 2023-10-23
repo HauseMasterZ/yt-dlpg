@@ -198,7 +198,7 @@ def downloader(
         "format": f"bestaudio[ext={ext}]/bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio[ext=flv]"
         if videoBool == False
         else f"bv*[ext={ext}][height<={res}]+ba[ext={ext}][height<={res}]/b[ext={ext}][height<={res}]/bv*[ext={ext}][height<=1080]+ba[ext={ext}][height<=1080]/b[ext={ext}][height<=1080]/bv*+ba/b",
-        "outtmpl": f"{direc}\%(title)s.%(ext)s",
+        "outtmpl": f"{direc}/%(title)s.%(ext)s",
         "progress_hooks": [progressHook],
         "postprocessor_args": [
             "-ss",
@@ -213,6 +213,7 @@ def downloader(
         )
         if arcBool
         else None,
+        "yesplaylist": True,
     }
     try:
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:
