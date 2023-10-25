@@ -253,63 +253,63 @@ def downloader(
 def autoStart() -> None:
     global on_close
     on_close = True
-    if auto_start_bool.get() == 1:
-        import win32com.client
+    # if auto_start_bool.get() == 1:
+        # import win32com.client
 
-        Shell = win32com.client.Dispatch("WScript.Shell")
-        startup_folder = Shell.SpecialFolders("Startup")
-        arcBool = arc.get()
-        direc = directory.get("1.0", END)
-        direc = direc.strip("\n")
-        res = clickedRes.get()
-        ext = clicked.get()
-        urls = text_box.get("1.0", END).split(",")
-        for i in range(len(urls)):
-            urls[i] = urls[i].strip(" ")
-        urls[-1] = urls[-1].strip("\n")
-        ytdlp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ytdlp.bat")
-        here = os.path.dirname(os.path.abspath(__file__))
-        try:
-            myBat = open(ytdlp, "w+")
-            myBat.truncate(0)
-            ext = ext.split(" ", 1)
-            if videoBool:
-                if arcBool == 0:
-                    myBat.write(
-                        f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -S "res:{res}" -f {ext[0]} "{"".join(urls)}"'
-                    )
-                else:
-                    myBat.write(
-                        f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -S "res:{res}" -f "bv*+ba/b[ext={ext[0]}]"  --download-archive archive.txt "{"".join(urls)}"'
-                    )
-            else:
-                if arcBool == 0:
-                    myBat.write(
-                        f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -f {ext[0]} "{"".join(urls)}"'
-                    )
-                else:
-                    myBat.write(
-                        f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -f "bv*+ba/b[ext={ext[0]}]"  --download-archive archive.txt "{"".join(urls)}"'
-                    )
-        finally:
-            myBat.close()
+        # Shell = win32com.client.Dispatch("WScript.Shell")
+        # startup_folder = Shell.SpecialFolders("Startup")
+        # arcBool = arc.get()
+        # direc = directory.get("1.0", END)
+        # direc = direc.strip("\n")
+        # res = clickedRes.get()
+        # ext = clicked.get()
+        # urls = text_box.get("1.0", END).split(",")
+        # for i in range(len(urls)):
+        #     urls[i] = urls[i].strip(" ")
+        # urls[-1] = urls[-1].strip("\n")
+        # ytdlp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ytdlp.bat")
+        # here = os.path.dirname(os.path.abspath(__file__))
+        # try:
+        #     myBat = open(ytdlp, "w+")
+        #     myBat.truncate(0)
+        #     ext = ext.split(" ", 1)
+        #     if videoBool:
+        #         if arcBool == 0:
+        #             myBat.write(
+        #                 f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -S "res:{res}" -f {ext[0]} "{"".join(urls)}"'
+        #             )
+        #         else:
+        #             myBat.write(
+        #                 f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -S "res:{res}" -f "bv*+ba/b[ext={ext[0]}]"  --download-archive archive.txt "{"".join(urls)}"'
+        #             )
+        #     else:
+        #         if arcBool == 0:
+        #             myBat.write(
+        #                 f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -f {ext[0]} "{"".join(urls)}"'
+        #             )
+        #         else:
+        #             myBat.write(
+        #                 f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -f "bv*+ba/b[ext={ext[0]}]"  --download-archive archive.txt "{"".join(urls)}"'
+        #             )
+        # finally:
+        #     myBat.close()
 
-        startup_folder = Shell.SpecialFolders("Startup")
-        shortcut_path = os.path.join(startup_folder, "auto_start.lnk")
-        target_file = ytdlp
-        shortcut = Shell.CreateShortCut(shortcut_path)
-        shortcut.Targetpath = target_file
-        shortcut.WindowStyle = 7
-        shortcut.save()
-    else:
-        try:
-            os.remove(os.path.join(startup_folder, "auto_start.lnk"))
-        except:
-            pass
-    try:
-        os.remove(os.path.join(here, "auto_start.lnk"))
-    except:
-        pass
+        # startup_folder = Shell.SpecialFolders("Startup")
+        # shortcut_path = os.path.join(startup_folder, "auto_start.lnk")
+        # target_file = ytdlp
+        # shortcut = Shell.CreateShortCut(shortcut_path)
+        # shortcut.Targetpath = target_file
+        # shortcut.WindowStyle = 7
+        # shortcut.save()
+    # else:
+    #     try:
+    #         os.remove(os.path.join(startup_folder, "auto_start.lnk"))
+    #     except:
+    #         pass
+    # try:
+    #     os.remove(os.path.join(here, "auto_start.lnk"))
+    # except:
+    #     pass
     root.destroy()
 
 def set_focus(event: Event) -> None:
