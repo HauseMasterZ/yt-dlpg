@@ -1,18 +1,35 @@
 import datetime
 import os
+import subprocess
 import threading
 import tkinter.messagebox as tkm
 from tkinter import *
 from tkinter import filedialog, messagebox, ttk
+from types import NoneType
+
 import yt_dlp as youtube_dl
 
 urls = []
 on_close = False
 playlist_index = 1
 is_running = False
+ffmpeg_installed = True
+
+try:
+    subprocess.run(
+        ["ffmpeg", "-version"],
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+    ffmpeg_installed = True
+except (subprocess.CalledProcessError, FileNotFoundError):
+    ffmpeg_installed = False
+
 
 class DownloadStoppedError(Exception):
     pass
+
 
 class CreateToolTip(object):
     """
@@ -74,6 +91,7 @@ class CreateToolTip(object):
         if tw:
             tw.destroy()
 
+
 def downAction() -> None:
     global urls, is_running
     urls = [url.strip() for url in text_box.get("1.0", END).split(",")]
@@ -130,16 +148,21 @@ def downAction() -> None:
             "Please Wait till the current dowload is finished.",
         )
 
+
 def progressHook(progress: dict) -> None:
-    global on_close, playlist_index
+    global on_close, playlist_index, videoBool
     if on_close:
         raise DownloadStoppedError()
         return
     file_name = progress["filename"].rsplit("\\", 1)[-1]
-    if progress["status"] == "downloading":
+    if "downloading" in progress["status"]:
         myDown.configure(text="Downloading...", background="Red")
-        total_bytes = progress.get("total_bytes")
+        if progress.get("total_bytes"):
+            total_bytes = progress.get("total_bytes")
+        else:
+            total_bytes = progress.get("total_bytes_estimate")
         downloaded_bytes = progress.get("downloaded_bytes")
+
         try:
             total_size = float(format(total_bytes / 1048576, ".2f"))
             if total_size > 1024:
@@ -154,18 +177,22 @@ def progressHook(progress: dict) -> None:
             else:
                 curr_size = str(curr_size) + "MiB"
             size_lbl.configure(text=f"{curr_size} of {total_size}")
-            speed_lbl.configure(
-                text=f"at {format(progress.get('speed')/1048576, '.2f')}MiB/s"
-            )
-            if int(progress["eta"]) > 60:
-                eta_lbl.configure(
-                    text=f"{int(progress['eta']/60)} minutes remaining..."
+            if progress["speed"] != NoneType and progress["speed"] != None:
+                speed_lbl.configure(
+                    text=f"at {format(progress.get('speed')/1048576, '.2f')}MiB/s"
                 )
-            else:
-                eta_lbl.configure(text=f"{int(progress['eta'])} seconds remaining...")
+            if progress["eta"] != NoneType and progress["eta"] != None:
+                if int(progress["eta"]) > 60:
+                    eta_lbl.configure(
+                        text=f"{int(progress['eta']/60)} minutes remaining..."
+                    )
+                else:
+                    eta_lbl.configure(
+                        text=f"{int(progress['eta'])} seconds remaining..."
+                    )
             now_lbl.configure(text=f"Now downloading: {file_name}")
-        except:
-            pass
+        except Exception as e:
+            print(e)
         if total_bytes and downloaded_bytes:
             percentage = (downloaded_bytes / total_bytes) * 100
             progress_bar["value"] = percentage
@@ -180,6 +207,7 @@ def progressHook(progress: dict) -> None:
     else:
         myDown.configure(text="Downloading...", background="Red")
 
+
 def downloader(
     urls: list[str],
     ext: str,
@@ -189,145 +217,162 @@ def downloader(
     start_time: str,
     end_time: str,
 ) -> None:
-    global videoBool, auto_start_bool, playlist_index, is_running
+    global videoBool, auto_start_bool, playlist_index, is_running, ffmpeg_installed
     hours, minutes, seconds = map(int, start_time.split(":"))
     start_total_seconds = (hours * 3600) + (minutes * 60) + seconds
     hours, minutes, seconds = map(int, end_time.split(":"))
     end_total_seconds = (hours * 3600) + (minutes * 60) + seconds
+    format = ""
+    if videoBool:
+        if ffmpeg_installed:
+            format = f"bv*[ext={ext}][height<={res}]+ba[ext=m4a]/b[ext={ext}][height<={res}]/bv*[height<={res}]+ba[ext=m4a]/b[ext=m4a][height<={res}]/bv*[height<={res}]+ba[ext=m4a]/b[ext=mp3][height<={res}]/bv*[height<={res}]+ba[ext=m4a]/b[ext=flv][height<={res}]"
+        else:
+            format = f"b[ext={ext}][height<={res}]"
+    else:
+        format = f"bestaudio[ext={ext}]/bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio[ext=flv]"
     ydl_opts = {
-        "format": f"bestaudio[ext={ext}]/bestaudio[ext=m4a]/bestaudio[ext=mp3]/bestaudio[ext=flv]"
-        if videoBool == False
-        else f"bv*[ext={ext}][height<={res}]+ba[ext={ext}][height<={res}]/b[ext={ext}][height<={res}]/bv*[ext={ext}][height<=1080]+ba[ext={ext}][height<=1080]/b[ext={ext}][height<=1080]/bv*+ba/b",
+        "format": format,
         "outtmpl": f"{direc}/%(title)s.%(ext)s",
         "progress_hooks": [progressHook],
-        "postprocessor_args": [
-            "-ss",
-            f"{start_total_seconds}",  # Start time in seconds
-            "-to",
-            f"{end_total_seconds}",  # End time in seconds
-        ]
-        if start_time != end_time
-        else [],
-        "download_archive": os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "archive.txt"
-        )
-        if arcBool
-        else None,
+        "postprocessor_args": (
+            [
+                "-ss",
+                f"{start_total_seconds}",  # Start time in seconds
+                "-to",
+                f"{end_total_seconds}",  # End time in seconds
+            ]
+            if start_time != end_time
+            else []
+        ),
+        "download_archive": (
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "archive.txt")
+            if arcBool
+            else None
+        ),
         "yesplaylist": True,
     }
+
     try:
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            for video_url in urls:
-                info_dict = ydl.extract_info(video_url, download=False)
-                index_lbl_id.configure(text="1")
-                of_lbl.configure(text="of ")
-                try:
-                    if (
-                        end_total_seconds > info_dict["duration"]
-                        or start_total_seconds > info_dict["duration"]
-                    ):
-                        messagebox.showinfo(
-                            "Invalid time", "Time is greater than video duration"
-                        )
-                        myDown.configure(text="Download", background="Black")
-                        return
-                    index_lbl_total.configure(text=info_dict["playlist_count"])
-                except KeyError:
-                    index_lbl_total.configure(text="1")
-                ydl.download([video_url])
-                if (
-                    ydl.params.get("noplaylist")
-                    or ydl.params.get("max_downloads") is None
-                ):
-                    myDown.configure(text="Download", background="Black")
-                    is_running = False
-                    playlist_index = 1
-                    return
+        download_videos(ydl_opts, urls, start_total_seconds, end_total_seconds)
     except DownloadStoppedError:
         return
     except youtube_dl.DownloadError as err:
-        messagebox.showerror("Youtube Dlp Error Occured", f"{err}")
-        myDown.configure(text="Download", background="Black")
         playlist_index = 1
+        is_running = False
+        myDown.configure(text="Download", background="Black")
+        messagebox.showerror("Youtube Dlp Error Occured", f"{err}")
+
+
+def download_videos(ydl_opts, urls, start_total_seconds, end_total_seconds):
+    global videoBool, auto_start_bool, playlist_index, is_running
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        for video_url in urls:
+            info_dict = ydl.extract_info(video_url, download=False)
+            index_lbl_id.configure(text="1")
+            of_lbl.configure(text="of ")
+            try:
+                if (
+                    end_total_seconds > info_dict["duration"]
+                    or start_total_seconds > info_dict["duration"]
+                ):
+                    messagebox.showinfo(
+                        "Invalid time", "Time is greater than video duration"
+                    )
+                    myDown.configure(text="Download", background="Black")
+                    return
+                index_lbl_total.configure(text=info_dict["playlist_count"])
+            except KeyError:
+                index_lbl_total.configure(text="1")
+            ydl.download([video_url])
+            if ydl.params.get("noplaylist") or ydl.params.get("max_downloads") is None:
+                myDown.configure(text="Download", background="Black")
+                is_running = False
+                playlist_index = 1
+
 
 def autoStart() -> None:
     global on_close
     on_close = True
-    # if auto_start_bool.get() == 1:
-        # import win32com.client
+    if auto_start_bool.get() == 1:
+        import win32com.client
 
-        # Shell = win32com.client.Dispatch("WScript.Shell")
-        # startup_folder = Shell.SpecialFolders("Startup")
-        # arcBool = arc.get()
-        # direc = directory.get("1.0", END)
-        # direc = direc.strip("\n")
-        # res = clickedRes.get()
-        # ext = clicked.get()
-        # urls = text_box.get("1.0", END).split(",")
-        # for i in range(len(urls)):
-        #     urls[i] = urls[i].strip(" ")
-        # urls[-1] = urls[-1].strip("\n")
-        # ytdlp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ytdlp.bat")
-        # here = os.path.dirname(os.path.abspath(__file__))
-        # try:
-        #     myBat = open(ytdlp, "w+")
-        #     myBat.truncate(0)
-        #     ext = ext.split(" ", 1)
-        #     if videoBool:
-        #         if arcBool == 0:
-        #             myBat.write(
-        #                 f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -S "res:{res}" -f {ext[0]} "{"".join(urls)}"'
-        #             )
-        #         else:
-        #             myBat.write(
-        #                 f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -S "res:{res}" -f "bv*+ba/b[ext={ext[0]}]"  --download-archive archive.txt "{"".join(urls)}"'
-        #             )
-        #     else:
-        #         if arcBool == 0:
-        #             myBat.write(
-        #                 f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -f {ext[0]} "{"".join(urls)}"'
-        #             )
-        #         else:
-        #             myBat.write(
-        #                 f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -f "bv*+ba/b[ext={ext[0]}]"  --download-archive archive.txt "{"".join(urls)}"'
-        #             )
-        # finally:
-        #     myBat.close()
+        Shell = win32com.client.Dispatch("WScript.Shell")
+        startup_folder = Shell.SpecialFolders("Startup")
+        arcBool = arc.get()
+        direc = directory.get("1.0", END)
+        direc = direc.strip("\n")
+        res = clickedRes.get()
+        ext = clicked.get()
+        urls = text_box.get("1.0", END).split(",")
+        for i in range(len(urls)):
+            urls[i] = urls[i].strip(" ")
+        urls[-1] = urls[-1].strip("\n")
+        ytdlp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ytdlp.bat")
+        here = os.path.dirname(os.path.abspath(__file__))
+        try:
+            myBat = open(ytdlp, "w+")
+            myBat.truncate(0)
+            ext = ext.split(" ", 1)
+            if videoBool:
+                if arcBool == 0:
+                    myBat.write(
+                        f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -S "res:{res}" -f {ext[0]} "{"".join(urls)}"'
+                    )
+                else:
+                    myBat.write(
+                        f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -S "res:{res}" -f "bv*+ba/b[ext={ext[0]}]"  --download-archive archive.txt "{"".join(urls)}"'
+                    )
+            else:
+                if arcBool == 0:
+                    myBat.write(
+                        f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -f {ext[0]} "{"".join(urls)}"'
+                    )
+                else:
+                    myBat.write(
+                        f'start /D "{here}" cmd /k "yt-dlp.exe -P "{direc}" -f "bv*+ba/b[ext={ext[0]}]"  --download-archive archive.txt "{"".join(urls)}"'
+                    )
+        finally:
+            myBat.close()
 
-        # startup_folder = Shell.SpecialFolders("Startup")
-        # shortcut_path = os.path.join(startup_folder, "auto_start.lnk")
-        # target_file = ytdlp
-        # shortcut = Shell.CreateShortCut(shortcut_path)
-        # shortcut.Targetpath = target_file
-        # shortcut.WindowStyle = 7
-        # shortcut.save()
-    # else:
-    #     try:
-    #         os.remove(os.path.join(startup_folder, "auto_start.lnk"))
-    #     except:
-    #         pass
-    # try:
-    #     os.remove(os.path.join(here, "auto_start.lnk"))
-    # except:
-    #     pass
+        startup_folder = Shell.SpecialFolders("Startup")
+        shortcut_path = os.path.join(startup_folder, "auto_start.lnk")
+        target_file = ytdlp
+        shortcut = Shell.CreateShortCut(shortcut_path)
+        shortcut.Targetpath = target_file
+        shortcut.WindowStyle = 7
+        shortcut.save()
+    else:
+        try:
+            os.remove(os.path.join(startup_folder, "auto_start.lnk"))
+        except:
+            pass
+    try:
+        os.remove(os.path.join(here, "auto_start.lnk"))
+    except:
+        pass
     root.destroy()
+
 
 def set_focus(event: Event) -> None:
     if event.widget == root:
         root.focus_set()
 
+
 def on_entry(event: Event) -> None:
     ending_timestamp.configure(foreground="black")
+
 
 def on_focus(event: Event) -> None:
     if ending_timestamp.get().strip() == "":
         ending_timestamp.insert(0, "00:00:00")  # Add the placeholder text
     ending_timestamp.configure(foreground="gray")
 
+
 def openFile() -> None:
     filepath = filedialog.askdirectory()
     directory.delete("1.0", END)
     directory.insert("1.0", filepath)
+
 
 def videoRes(event: Event) -> None:
     global videoBool
@@ -343,18 +388,23 @@ def videoRes(event: Event) -> None:
         myText2.place_forget()
     return
 
+
 if __name__ == "__main__":
     root = Tk()
     is_windows = os.name == "nt"
     try:
         if is_windows:
             root.iconbitmap(
-                os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/icons/icon.ico")
+                os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)), "..", "static", "icons", "icon.ico"
+                )
             )
         else:
             root.iconbitmap(
                 "@"
-                + os.path.join(os.path.dirname(os.path.abspath(__file__)), "static/icons/icon.xbm")
+                + os.path.join(
+                    os.path.dirname(os.path.abspath(__file__)), "static/icons/icon.xbm"
+                )
             )
     except:
         messagebox.showinfo("Iconbitmap icon not found", "Window Icon Cannot be loaded")
@@ -376,14 +426,14 @@ if __name__ == "__main__":
     text_box.configure(foreground="Black")
 
     myDown = Button(root, text="Download", command=downAction, padx=6, pady=10)
-    myDown.place(anchor=E, relx=0.96, rely=0.17)
+    myDown.place(anchor=E, relx=0.96, rely=0.17, relheight=0.1, relwidth=0.1)
     myDown.configure(
         foreground="White",
         background="Black",
         activebackground="Black",
         activeforeground="White",
-        relief=SUNKEN,
-        bd=0,
+        relief=RIDGE,
+        borderwidth=1,
         highlightthickness=0,
         highlightcolor="Black",
     )
@@ -549,6 +599,28 @@ if __name__ == "__main__":
         highlightthickness=1,
         borderwidth=0,
         highlightcolor="Grey",
+    )
+
+    ffmpeg_label = Label(root, text="FFmpeg: ")
+    ffmpeg_label.place(anchor=E, relx=0.5, rely=0.93)
+    ffmpeg_label.configure(background="Black", foreground="White")
+    ffmpeg_helper_label = Label(root)
+    ffmpeg_helper_label.place(anchor=W, relx=0.5, rely=0.93)
+    if ffmpeg_installed:
+        ffmpeg_helper_label.configure(
+            background="Black", foreground="#66f542", text="Dectected"
+        )
+    else:
+        ffmpeg_helper_label.configure(
+            background="Black", foreground="Red", text="Not Dectected"
+        )
+
+    note_lbl = Label(root, text=" ? ")
+    note_lbl.place(anchor=W, relx=0.58, rely=0.93)
+    note_lbl.configure(background="Black", foreground="White")
+    myTip4 = CreateToolTip(
+        note_lbl,
+        "Incase ffmpeg is not installed then yt-dlp's ability to download video at specific format and resolution will be limited.",
     )
 
     root.protocol("WM_DELETE_WINDOW", autoStart)
