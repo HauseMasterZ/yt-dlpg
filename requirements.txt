@@ -1,2 +1,3 @@
 ffmpeg_python
 yt_dlp
+pywin32

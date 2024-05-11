@@ -5,8 +5,6 @@ import threading
 import tkinter.messagebox as tkm
 from tkinter import *
 from tkinter import filedialog, messagebox, ttk
-from types import NoneType
-
 import yt_dlp as youtube_dl
 
 urls = []
@@ -177,11 +175,11 @@ def progressHook(progress: dict) -> None:
             else:
                 curr_size = str(curr_size) + "MiB"
             size_lbl.configure(text=f"{curr_size} of {total_size}")
-            if progress["speed"] != NoneType and progress["speed"] != None:
+            if progress["speed"] != None:
                 speed_lbl.configure(
                     text=f"at {format(progress.get('speed')/1048576, '.2f')}MiB/s"
                 )
-            if progress["eta"] != NoneType and progress["eta"] != None:
+            if progress["eta"] != None:
                 if int(progress["eta"]) > 60:
                     eta_lbl.configure(
                         text=f"{int(progress['eta']/60)} minutes remaining..."
