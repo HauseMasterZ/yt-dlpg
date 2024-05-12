@@ -1,11 +1,10 @@
 import datetime
-from gc import disable
 import os
-import subprocess
 import threading
 import tkinter.messagebox as tkm
 from tkinter import *
 from tkinter import filedialog, messagebox, ttk
+
 import yt_dlp as youtube_dl
 
 urls = []
@@ -13,18 +12,7 @@ on_close = False
 playlist_index = 1
 is_running = False
 is_windows = os.name == "nt"
-ffmpeg_installed = True
-
-try:
-    subprocess.run(
-        ["ffmpeg", "-version"],
-        check=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    ffmpeg_installed = True
-except (subprocess.CalledProcessError, FileNotFoundError):
-    ffmpeg_installed = False
+ffmpeg_installed = os.system("ffmpeg -version") == 0
 
 
 class DownloadStoppedError(Exception):
@@ -395,7 +383,11 @@ if __name__ == "__main__":
         if is_windows:
             root.iconbitmap(
                 os.path.join(
-                    os.path.dirname(os.path.abspath(__file__)), "..", "static", "icons", "icon.ico"
+                    os.path.dirname(os.path.abspath(__file__)),
+                    "..",
+                    "static",
+                    "icons",
+                    "icon.ico",
                 )
             )
         else:
