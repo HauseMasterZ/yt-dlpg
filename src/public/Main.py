@@ -1,4 +1,5 @@
 import datetime
+from gc import disable
 import os
 import subprocess
 import threading
@@ -11,6 +12,7 @@ urls = []
 on_close = False
 playlist_index = 1
 is_running = False
+is_windows = os.name == "nt"
 ffmpeg_installed = True
 
 try:
@@ -389,7 +391,6 @@ def videoRes(event: Event) -> None:
 
 if __name__ == "__main__":
     root = Tk()
-    is_windows = os.name == "nt"
     try:
         if is_windows:
             root.iconbitmap(
@@ -503,6 +504,7 @@ if __name__ == "__main__":
         bd=0,
         highlightthickness=0,
         highlightcolor="Black",
+        state=NORMAL if is_windows else DISABLED,
     )
     auto_label = Label(root, text="Auto Start  ?")
     auto_label.place(anchor=W, relx=0.52, rely=0.43)
