@@ -600,18 +600,15 @@ if __name__ == "__main__":
     ffmpeg_helper_label.place(anchor=W, relx=0.5, rely=0.93)
     if ffmpeg_installed:
         ffmpeg_helper_label.configure(
-            background="Black", foreground="#66f542", text="Dectected"
+            background="Black", foreground="#66f542", text="Dectected  ?"
         )
     else:
         ffmpeg_helper_label.configure(
-            background="Black", foreground="Red", text="Not Dectected"
+            background="Black", foreground="Red", text="Not Dectected  ?"
         )
 
-    note_lbl = Label(root, text=" ? ")
-    note_lbl.place(anchor=W, relx=0.58, rely=0.93)
-    note_lbl.configure(background="Black", foreground="White")
     myTip4 = CreateToolTip(
-        note_lbl,
+        ffmpeg_helper_label,
         "Incase ffmpeg is not installed then yt-dlp's ability to download video at specific format and resolution will be limited.",
     )
 
